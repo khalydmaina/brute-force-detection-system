@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DETECTION SYSTEM — SOC Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --bg:      #060910; --bg2:     #0a0f1a; --bg3:     #0f1623; --bg4:     #141d2e;
+  --border:  #1c2d45; --border2: #243d5a;
+  --text:    #b8cce0; --dim:     #4a6580; --bright:  #e0efff;
+  --cyan:    #00d4ff; --cyan2:   #0088aa;
+  --green:   #00e676; --green2:  #005c2a;
+  --amber:   #ffb300; --amber2:  #6b4a00;
+  --red:     #ff3d3d; --red2:    #6b1a1a;
+  --purple:  #b388ff; --purple2: #4a2d8a;
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+html,body{
+  min-height:100vh; background:var(--bg); color:var(--text);
+  font-family:'Outfit',sans-serif; overflow-x:hidden;
+}
+
+body::after{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+  pointer-events:none;z-index:9999;
+}
+
+/* ── HEADER ── */
+header{
+  height:52px; display:flex;align-items:center;gap:16px; padding:0 20px;
+  background:var(--bg2); border-bottom:1px solid var(--border);
+  position:sticky; top:0; z-index:100;
+}
+.logo-mark{display:flex;align-items:center;gap:10px;}
+.logo-icon{
+  width:30px;height:30px; background:linear-gradient(135deg,var(--cyan),var(--cyan2));
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Space Mono',monospace;font-size:10px;color:#000;font-weight:700;
+}
+.logo-text{font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:var(--bright);letter-spacing:2px;}
+.logo-text span{color:var(--cyan);}
+.logo-sub{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);font-family:'Space Mono',monospace;margin-top:1px;}
+
+.header-center{flex:1;display:flex;align-items:center;justify-content:center;gap:24px;}
+.nav-btn{
+  background:none;border:none; font-family:'Space Mono',monospace;font-size:10px;
+  letter-spacing:1.5px;text-transform:uppercase; color:var(--dim);cursor:pointer;
+  padding:6px 12px;border-radius:3px; transition:all 0.2s;border-bottom:2px solid transparent;
+}
+.nav-btn:hover{color:var(--text);}
+.nav-btn.active{color:var(--cyan);border-bottom-color:var(--cyan);}
+
+.header-right{display:flex;align-items:center;gap:16px;}
+.status-pill{
+  display:flex;align-items:center;gap:7px; background:var(--bg3);border:1px solid var(--border);
+  border-radius:20px;padding:4px 12px; font-family:'Space Mono',monospace;font-size:10px;color:var(--dim);
+}
+.pulse-dot{width:7px;height:7px;border-radius:50%;background:var(--dim);}
+.pulse-dot.on{background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite;}
+.pulse-dot.err{background:var(--red);box-shadow:0 0 6px var(--red);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* ── LAYOUT ── */
+.app{min-height:calc(100vh - 52px);display:flex;flex-direction:column;}
+.page{display:none;flex:1;}
+.page.active{display:flex;flex-direction:column;}
+
+/* ── STATS BAR ── */
+.stats-bar{
+  display:grid;grid-template-columns:repeat(7,1fr); gap:1px;background:var(--border);
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.stat-cell{background:var(--bg2);padding:10px 14px;display:flex;flex-direction:column;gap:3px;}
+.stat-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);}
+.stat-value{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:var(--bright);line-height:1;transition:color 0.4s;}
+.stat-sub{font-size:10px;color:var(--dim);}
+
+/* ── MAIN CONTENT AREA ── */
+.main-grid{ display:grid;grid-template-columns:320px 1fr; flex:1;gap:0; align-items:start; }
+
+/* ── LEFT PANEL ── */
+.left-panel{
+  background:var(--bg2);border-right:1px solid var(--border); display:flex;flex-direction:column;
+  position:sticky; top:52px; height:calc(100vh - 52px);
+}
+.panel-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+.ptab{
+  flex:1;padding:10px 6px;background:none;border:none; font-family:'Space Mono',monospace;font-size:9px;
+  letter-spacing:1px;text-transform:uppercase;color:var(--dim);cursor:pointer;
+  border-bottom:2px solid transparent;transition:all 0.2s;
+}
+.ptab:hover{color:var(--text);}
+.ptab.active{color:var(--cyan);border-bottom-color:var(--cyan);background:rgba(0,212,255,0.03);}
+.ptab-pane{display:none;flex-direction:column;gap:12px;padding:16px;overflow-y:auto;flex:1;}
+.ptab-pane.active{display:flex;}
+
+.field{display:flex;flex-direction:column;gap:5px;}
+.flabel{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);}
+input[type=text],input[type=password]{
+  width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:3px;
+  color:var(--bright);font-family:'Space Mono',monospace;font-size:12px;
+  padding:9px 11px;outline:none;transition:border-color 0.2s;
+}
+input:focus{border-color:var(--cyan2);}
+
+.btn{
+  width:100%;padding:10px;border:none;border-radius:3px; font-family:'Space Mono',monospace;font-size:10px;
+  font-weight:700; letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all 0.15s;
+}
+.btn-cyan{background:var(--cyan);color:#000;} .btn-cyan:hover{background:#40ddff;transform:translateY(-1px);}
+.btn-red{background:rgba(255,61,61,0.12);border:1px solid var(--red2);color:var(--red);} .btn-red:hover{background:rgba(255,61,61,0.22);}
+.btn-amber{background:rgba(255,179,0,0.1);border:1px solid var(--amber2);color:var(--amber);} .btn-amber:hover{background:rgba(255,179,0,0.2);}
+.btn-green{background:rgba(0,230,118,0.08);border:1px solid var(--green2);color:var(--green);} .btn-green:hover{background:rgba(0,230,118,0.18);}
+.btn-ghost{background:rgba(255,255,255,0.04);border:1px solid var(--border2);color:var(--text);} .btn-ghost:hover{background:rgba(255,255,255,0.08);}
+.btn-purple{background:rgba(179,136,255,0.1);border:1px solid var(--purple2);color:var(--purple);} .btn-purple:hover{background:rgba(179,136,255,0.2);}
+.btn-sm{padding:7px 12px;width:auto;font-size:9px;}
+
+.sep{border:none;border-top:1px solid var(--border);}
+.sec-title{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);padding-bottom:5px;border-bottom:1px solid var(--border);}
+
+.creds-card{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;}
+.cred-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border);font-family:'Space Mono',monospace;font-size:11px;}
+.cred-row:last-child{border:none;}
+.cu{color:var(--cyan);} .cp{color:var(--dim);}
+.use-btn{background:none;border:1px solid var(--border2);border-radius:2px;color:var(--dim);font-family:'Space Mono',monospace;font-size:9px;padding:2px 6px;cursor:pointer;transition:all 0.2s;}
+.use-btn:hover{color:var(--cyan);border-color:var(--cyan2);}
+
+.honeypot-names{font-family:'Space Mono',monospace;font-size:10px;color:var(--red);line-height:2;}
+.atk-status{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:10px 12px;font-family:'Space Mono',monospace;font-size:11px;color:var(--dim);min-height:38px;transition:all 0.3s;}
+.atk-status.running{color:var(--amber);border-color:var(--amber2);}
+.atk-status.done{color:var(--green);border-color:var(--green2);}
+.atk-status.demo{color:var(--purple);border-color:var(--purple2);}
+.atk-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+.admin-box{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;font-family:'Space Mono',monospace;font-size:11px;line-height:2.2;display:none;}
+.ar{display:flex;justify-content:space-between;} .ak{color:var(--dim);} .av{color:var(--bright);}
+.av.red{color:var(--red);} .av.amber{color:var(--amber);} .av.grn{color:var(--green);}
+
+/* ── RIGHT PANEL ── */
+.right-panel{display:flex;flex-direction:column;min-height:calc(100vh - 52px);}
+.charts-row{ display:grid;grid-template-columns:1fr 1fr 260px; gap:1px;background:var(--border); min-height:280px; flex-shrink:0; }
+.chart-box{ background:var(--bg2);padding:12px 16px; display:flex;flex-direction:column;gap:8px; overflow:hidden; }
+.chart-title{ font-family:'Space Mono',monospace;font-size:9px; letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);flex-shrink:0; }
+.chart-wrap{ flex:1; position:relative; min-height:0; height:100%; width:100%; }
+
+.log-area{flex:1;display:flex;flex-direction:column;min-height:600px;}
+.log-head{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;}
+.log-title-text{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);}
+.log-badge{font-family:'Space Mono',monospace;font-size:10px;color:var(--cyan);background:rgba(0,212,255,0.08);padding:2px 8px;border-radius:10px;}
+.table-scroll{overflow-y:auto;flex:1;}
+
+table{width:100%;border-collapse:collapse;font-family:'Space Mono',monospace;font-size:11px;}
+thead tr{position:sticky;top:0;background:var(--bg3);z-index:5;}
+th{padding:9px 12px;text-align:left;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--border);font-weight:400;}
+td{padding:8px 12px;border-bottom:1px solid rgba(28,45,69,0.4);white-space:nowrap;}
+tbody tr{transition:background 0.1s;}
+tbody tr:hover{background:rgba(255,255,255,0.015);}
+tbody tr.new-row{animation:rowIn 0.25s ease;}
+@keyframes rowIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
+
+.chip{display:inline-block;padding:2px 7px;border-radius:2px;font-size:9px;font-weight:700;letter-spacing:0.5px;}
+.chip-ok    {background:rgba(0,230,118,0.1);color:var(--green);}
+.chip-inv   {background:rgba(74,101,128,0.15);color:var(--dim);}
+.chip-cap   {background:rgba(179,136,255,0.1);color:var(--purple);}
+.chip-thr   {background:rgba(255,179,0,0.1);color:var(--amber);}
+.chip-blk   {background:rgba(255,61,61,0.1);color:var(--red);}
+.chip-hon   {background:rgba(255,61,61,0.18);color:var(--red);border:1px solid var(--red2);}
+.tbadge{display:inline-block;padding:2px 5px;border-radius:2px;font-size:9px;font-weight:700;}
+.t1{background:rgba(0,230,118,0.08);color:var(--green);} .t2{background:rgba(179,136,255,0.08);color:var(--purple);}
+.t3{background:rgba(255,179,0,0.08);color:var(--amber);} .t4{background:rgba(255,61,61,0.1);color:var(--red);}
+.lat-f{color:var(--green);} .lat-o{color:var(--amber);} .lat-s{color:var(--red);}
+.empty-row td{text-align:center;padding:30px;color:var(--dim);font-size:11px;}
+
+/* ── COMPARISON PAGE ── */
+.compare-page{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:20px;}
+.compare-header{text-align:center;font-family:'Space Mono',monospace;}
+.compare-header h1{font-size:22px;color:var(--bright);letter-spacing:2px;margin-bottom:6px;}
+.compare-header p{color:var(--dim);font-size:12px;letter-spacing:1px;}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.compare-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+.compare-card.intercept{border-color:var(--cyan2);}
+.compare-card.fail2ban{border-color:var(--red2);}
+.cc-header{padding:14px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
+.cc-icon{width:32px;height:32px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.cc-icon.i{background:rgba(0,212,255,0.1);} .cc-icon.f{background:rgba(255,61,61,0.1);}
+.cc-name{font-size:14px;font-weight:700;color:var(--bright);}
+.cc-ver{font-family:'Space Mono',monospace;font-size:10px;color:var(--dim);}
+.cc-body{padding:16px 18px;display:flex;flex-direction:column;gap:10px;}
+.cc-row{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:3px;background:var(--bg3);font-size:12px;}
+.cc-row-icon{font-size:14px;flex-shrink:0;margin-top:1px;}
+.cc-row-text{line-height:1.5;color:var(--text);}
+.cc-row-text strong{color:var(--bright);display:block;margin-bottom:2px;font-size:11px;}
+
+.verdict-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:16px;}
+.verdict-cell{text-align:center;}
+.verdict-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);margin-bottom:6px;}
+.verdict-i{color:var(--green);font-weight:700;font-size:13px;} .verdict-f{color:var(--red);font-size:13px;}
+.verdict-vs{color:var(--dim);font-size:11px;margin:3px 0;}
+
+.spin{display:inline-block;width:9px;height:9px;border:2px solid var(--border2);border-top-color:var(--cyan);border-radius:50%;animation:spin 0.7s linear infinite;margin-right:5px;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg)}}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.demo-progress{height:3px;background:var(--border);flex-shrink:0;}
+.demo-progress-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--purple));width:0%;transition:width 0.5s ease;}
+
+/* ── PENALTIES PAGE (Blocks & Throttles) ── */
+.banned-page{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.banned-topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;}
+.banned-title{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--bright);letter-spacing:2px;}
+.banned-sub{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:1px;margin-top:3px;}
+.penalties-container{display:flex;flex-direction:column;gap:20px;padding:20px;overflow-y:auto;flex:1;}
+.penalties-section-header{font-family:'Space Mono',monospace;font-size:11px;color:var(--text);letter-spacing:1.5px;text-transform:uppercase;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:12px;display:flex;justify-content:space-between;}
+.banned-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-content:start;}
+.banned-empty{grid-column:1/-1;text-align:center;padding:40px 20px;font-family:'Space Mono',monospace;font-size:12px;color:var(--dim);background:var(--bg2);border:1px dashed var(--border);border-radius:6px;}
+
+.ban-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:10px;animation:rowIn 0.3s ease;transition:border-color 0.2s;}
+.ban-card.hard{border-color:var(--red2);} .ban-card.hard:hover{border-color:var(--red);}
+.ban-card.throttle{border-color:var(--amber2);} .ban-card.throttle:hover{border-color:var(--amber);}
+.ban-card-top{display:flex;align-items:center;justify-content:space-between;}
+.ban-ip{font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--bright);letter-spacing:1px;}
+.ban-card.hard .ban-ip {color:var(--red);} .ban-card.throttle .ban-ip {color:var(--amber);}
+.ban-status{display:flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:9px;padding:3px 8px;border-radius:10px;}
+.ban-card.hard .ban-status{color:var(--red);background:rgba(255,61,61,0.08);border:1px solid var(--red2);}
+.ban-card.throttle .ban-status{color:var(--amber);background:rgba(255,179,0,0.08);border:1px solid var(--amber2);}
+.ban-dot{width:6px;height:6px;border-radius:50%;}
+.ban-card.hard .ban-dot{background:var(--red);box-shadow:0 0 5px var(--red);animation:pulse 1.5s infinite;}
+.ban-card.throttle .ban-dot{background:var(--amber);box-shadow:0 0 5px var(--amber);animation:pulse 1.5s infinite;}
+.ban-ttl{font-family:'Space Mono',monospace;font-size:11px;color:var(--bright);}
+.ban-reason{font-family:'Space Mono',monospace;font-size:10px;color:var(--dim);padding:8px;background:var(--bg3);border-radius:3px;border:1px solid var(--border);}
+.ban-unblock{width:100%;padding:9px;border:1px solid var(--green2);border-radius:3px;background:rgba(0,230,118,0.06);color:var(--green);font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all 0.2s;}
+.ban-unblock:hover{background:rgba(0,230,118,0.15);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">
+    <div class="logo-icon">SOC</div>
+    <div>
+      <div class="logo-text">THE DETECTION<span> SYSTEM</span></div>
+      <div class="logo-sub">Security Operations Center</div>
+    </div>
+  </div>
+
+  <div class="header-center">
+    <button class="nav-btn active" onclick="showPage('dashboard')">Dashboard</button>
+    <button class="nav-btn" onclick="showPage('banned')">Active Penalties</button>
+    <button class="nav-btn" onclick="showPage('compare')">vs Fail2Ban</button>
+    <button class="nav-btn" onclick="showPage('api')">API Docs</button>
+  </div>
+
+  <div class="header-right">
+    <div class="status-pill">
+      <div class="pulse-dot" id="healthDot"></div>
+      <span id="healthLabel">CHECKING</span>
+    </div>
+  </div>
+</header>
+
+<div class="demo-progress"><div class="demo-progress-fill" id="demoBar"></div></div>
+
+<div class="app">
+
+<div class="page active" id="page-dashboard">
+  <div class="stats-bar">
+    <div class="stat-cell"><div class="stat-label">Total Requests</div><div class="stat-value" id="sTot">0</div><div class="stat-sub">all time</div></div>
+    <div class="stat-cell"><div class="stat-label">Hard Blocked</div><div class="stat-value" id="sBlk" style="color:var(--red)">0</div><div class="stat-sub">tier 4</div></div>
+    <div class="stat-cell"><div class="stat-label">Throttled</div><div class="stat-value" id="sThr" style="color:var(--amber)">0</div><div class="stat-sub">tier 3</div></div>
+    <div class="stat-cell"><div class="stat-label">CAPTCHA</div><div class="stat-value" id="sCap" style="color:var(--purple)">0</div><div class="stat-sub">tier 2</div></div>
+    <div class="stat-cell"><div class="stat-label">Successful</div><div class="stat-value" id="sOk" style="color:var(--green)">0</div><div class="stat-sub">authenticated</div></div>
+    <div class="stat-cell"><div class="stat-label">Detection Rate</div><div class="stat-value" id="sDet" style="color:var(--cyan)">0%</div><div class="stat-sub">threats caught</div></div>
+    <div class="stat-cell"><div class="stat-label">Avg Latency</div><div class="stat-value" id="sLat">0ms</div><div class="stat-sub">processing overhead</div></div>
+  </div>
+
+  <div class="main-grid">
+    <div class="left-panel">
+      <div class="panel-tabs">
+        <button class="ptab active" onclick="switchTab('login')">Login</button>
+        <button class="ptab" onclick="switchTab('attack')">Attack</button>
+        <button class="ptab" onclick="switchTab('admin')">Admin</button>
+      </div>
+
+      <div class="ptab-pane active" id="pt-login">
+        <div class="sec-title">Manual Login Test</div>
+        <div class="field"><div class="flabel">Simulated IP</div><input type="text" id="lIp" value="127.0.0.1"></div>
+        <div class="field"><div class="flabel">Username</div><input type="text" id="lUser" placeholder="alice"></div>
+        <div class="field"><div class="flabel">Password</div><input type="password" id="lPass" placeholder="password123"></div>
+        <button class="btn btn-cyan" onclick="doLogin()">Send Request</button>
+
+        <hr class="sep">
+        <div class="sec-title">Valid Credentials</div>
+        <div class="creds-card">
+          <div class="cred-row"><span class="cu">alice</span><span class="cp">password123</span><button class="use-btn" onclick="fill('alice','password123')">use</button></div>
+          <div class="cred-row"><span class="cu">bob</span><span class="cp">securepass</span><button class="use-btn" onclick="fill('bob','securepass')">use</button></div>
+          <div class="cred-row"><span class="cu">charlie</span><span class="cp">mypassword</span><button class="use-btn" onclick="fill('charlie','mypassword')">use</button></div>
+          <div class="cred-row"><span class="cu">admin</span><span class="cp">adminpass</span><button class="use-btn" onclick="fill('admin','adminpass')">use</button></div>
+        </div>
+
+        <div class="creds-card" style="border-color:var(--red2)">
+          <div class="flabel" style="color:var(--red);margin-bottom:6px">🍯 Honeypot Usernames</div>
+          <div class="honeypot-names">honeypot · admin_honeypot<br>root_trap · test_decoy</div>
+        </div>
+      </div>
+
+      <div class="ptab-pane" id="pt-attack">
+        <div class="sec-title">Attack Configuration</div>
+        <div class="field"><div class="flabel">Attacking IP</div><input type="text" id="aIp" value="10.0.0.99"></div>
+        <div class="field"><div class="flabel">Target Username</div><input type="text" id="aTarget" value="alice"></div>
+        <hr class="sep">
+        <div class="sec-title">Attack Vectors</div>
+        <div class="atk-grid">
+          <button class="btn btn-red" onclick="startBF()">💀 Brute Force</button>
+          <button class="btn btn-amber" onclick="startCS()">🔄 Cred Stuffing</button>
+          <button class="btn btn-amber" onclick="startLS()">🐌 Low &amp; Slow</button>
+          <button class="btn btn-red" onclick="doHoneypot()">🍯 Honeypot</button>
+        </div>
+        <button class="btn btn-purple" onclick="startAutoDemo()" id="autoDemoBtn">▶ AUTO DEMO MODE</button>
+        <button class="btn btn-ghost" onclick="stopAtk()" id="stopBtn" style="opacity:0.35;pointer-events:none">⏹ Stop</button>
+        <div class="atk-status" id="atkStatus">Ready — select an attack type.</div>
+        <hr class="sep">
+        <button class="btn btn-green" onclick="sendLegit()">👤 5x Legit Logins</button>
+      </div>
+
+      <div class="ptab-pane" id="pt-admin">
+        <div class="sec-title">IP Inspector</div>
+        <div class="field"><div class="flabel">IP Address</div><input type="text" id="admIp" placeholder="10.0.0.99"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="checkIp()">Check</button>
+          <button class="btn btn-red btn-sm" style="flex:1" onclick="unblockIp()">Unblock</button>
+        </div>
+        <div class="admin-box" id="admBox"></div>
+        
+        <hr class="sep">
+        <div class="sec-title">Database Explorer</div>
+        <button class="btn btn-purple" onclick="viewAllIps()">View All Stored IPs</button>
+        <div class="admin-box" id="allIpsBox" style="margin-top:10px; max-height:200px; overflow-y:auto;"></div>
+        
+        <button class="btn btn-red" style="margin-top:10px" onclick="factoryReset()">🔥 FACTORY RESET (Wipe All Databases)</button>
+
+        <hr class="sep">
+        <div class="sec-title">API Endpoint</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" id="apiInput" value="http://localhost:8000" style="flex:1">
+          <button class="btn btn-ghost btn-sm" onclick="setApi()">Set</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-panel">
+      <div class="charts-row">
+        <div class="chart-box">
+          <div class="chart-title">Reputation Score (Rs) — Last 40 Requests</div>
+          <div class="chart-wrap"><canvas id="rsChart"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title">Evasion Score (Es) — Last 40 Requests</div>
+          <div class="chart-wrap"><canvas id="esChart"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title">Tier Distribution</div>
+          <div class="chart-wrap"><canvas id="tierChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="log-area">
+        <div class="log-head">
+          <span class="log-title-text">Live Request Log</span>
+          <div style="display:flex;gap:10px;align-items:center">
+            <span class="log-badge" id="logCnt">0 requests</span>
+            <button class="btn btn-ghost btn-sm" onclick="clearLog()">Clear</button>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Time</th><th>IP</th><th>Username</th><th>Status</th><th>Rs</th><th>Es</th><th>Tier</th><th>Latency</th><th>Message</th></tr></thead>
+            <tbody id="logBody"><tr class="empty-row"><td colspan="9">No requests yet. Use the Attack tab or run simulate_audit.py</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-banned">
+  <div class="banned-page">
+    <div class="banned-topbar">
+      <div>
+        <div class="banned-title">ACTIVE PENALTIES</div>
+        <div class="banned-sub">IPs currently serving automated Redis locks</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="btn btn-ghost btn-sm" onclick="loadAllPenalties()">↻ Refresh</button>
+        <button class="btn btn-red btn-sm" onclick="clearAllPenalties()">🗑 Clear All</button>
+      </div>
+    </div>
+    <div class="penalties-container">
+      <div>
+        <div class="penalties-section-header">
+          <span>Tier 4: Hard Blocks (24h)</span>
+          <span id="hardBlockCount" style="color:var(--red);">0 IPs</span>
+        </div>
+        <div class="banned-grid" id="hardBlockGrid">
+          <div class="banned-empty">No IPs currently hard-blocked.</div>
+        </div>
+      </div>
+      <div style="margin-top: 10px;">
+        <div class="penalties-section-header">
+          <span>Tier 3: Throttled (5m)</span>
+          <span id="throttleCount" style="color:var(--amber);">0 IPs</span>
+        </div>
+        <div class="banned-grid" id="throttleGrid">
+          <div class="banned-empty">No IPs currently throttled.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-compare">
+  <div class="compare-page">
+    <div class="compare-header">
+      <h1>THE DETECTION SYSTEM vs FAIL2BAN</h1>
+      <p>Why static threshold tools fail against modern evasion attacks</p>
+    </div>
+    <div class="verdict-row">
+      <div class="verdict-cell"><div class="verdict-label">Low-and-Slow Detection</div><div class="verdict-i">✓ DETECTED</div><div class="verdict-vs">vs</div><div class="verdict-f">✗ EVADES</div></div>
+      <div class="verdict-cell"><div class="verdict-label">Credential Stuffing</div><div class="verdict-i">✓ DETECTED</div><div class="verdict-vs">vs</div><div class="verdict-f">✗ EVADES</div></div>
+      <div class="verdict-cell"><div class="verdict-label">Processing Latency</div><div class="verdict-i">&lt;5ms overhead</div><div class="verdict-vs">vs</div><div class="verdict-f">~2ms (no scoring)</div></div>
+      <div class="verdict-cell"><div class="verdict-label">Response Granularity</div><div class="verdict-i">4-tier graduated</div><div class="verdict-vs">vs</div><div class="verdict-f">Binary block only</div></div>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-card intercept">
+        <div class="cc-header"><div class="cc-icon i">🛡</div><div><div class="cc-name">THE DETECTION SYSTEM</div><div class="cc-ver">v4.0 — This Project</div></div></div>
+        <div class="cc-body">
+          <div class="cc-row"><div class="cc-row-icon">✅</div><div class="cc-row-text"><strong>Dynamic Reputation Score (Rs)</strong>Tracks per-IP failure history with linear time-decay recovery.</div></div>
+          <div class="cc-row"><div class="cc-row-icon">✅</div><div class="cc-row-text"><strong>Evasion Score (Es) — Spatial Geometry</strong>Measures IP diversity, username diversity, and timing anomalies.</div></div>
+          <div class="cc-row"><div class="cc-row-icon">✅</div><div class="cc-row-text"><strong>4-Tier Graduated Response</strong>CAPTCHA friction → Throttle → Hard Block.</div></div>
+          <div class="cc-row"><div class="cc-row-icon">✅</div><div class="cc-row-text"><strong>In-Memory Redis State (O(1))</strong>All state stored in RAM. Sub-5ms latency overhead maintained.</div></div>
+        </div>
+      </div>
+      <div class="compare-card fail2ban">
+        <div class="cc-header"><div class="cc-icon f">🔒</div><div><div class="cc-name">FAIL2BAN</div><div class="cc-ver">v1.1 — Industry Standard</div></div></div>
+        <div class="cc-body">
+          <div class="cc-row"><div class="cc-row-icon">❌</div><div class="cc-row-text"><strong>Static Per-IP Threshold Only</strong>An attacker using 100 IPs with 1 attempt each never triggers it.</div></div>
+          <div class="cc-row"><div class="cc-row-icon">❌</div><div class="cc-row-text"><strong>No Spatial Awareness</strong>Cannot detect credential stuffing or distributed botnets.</div></div>
+          <div class="cc-row"><div class="cc-row-icon">❌</div><div class="cc-row-text"><strong>Binary Block Response</strong>Either allows or blocks. High false-positive risk.</div></div>
+          <div class="cc-row"><div class="cc-row-icon">⚠️</div><div class="cc-row-text"><strong>Log File Dependency</strong>Parses log files on disk. Introduces I/O latency.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-api">
+  <div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:16px;">
+    <div style="font-family:'Space Mono',monospace;font-size:14px;color:var(--dim)">Opening API documentation...</div>
+    <button class="btn btn-cyan" style="width:auto;padding:10px 24px" onclick="window.open(API+'/docs','_blank')">Open in New Tab →</button>
+  </div>
+</div>
+
+</div><script>
+let API = 'http://localhost:8000';
+let attackRunning = false;
+let rsChart, esChart, tierChart;
+let lastClearedId = 0; 
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`page-${name}`).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'banned') loadAllPenalties();
+}
+
+function switchTab(name) {
+  const names = ['login','attack','admin'];
+  document.querySelectorAll('.ptab').forEach((b,i) => b.classList.toggle('active', names[i]===name));
+  document.querySelectorAll('.ptab-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById(`pt-${name}`).classList.add('active');
+}
+
+function initCharts() {
+  const baseOpts = {
+    responsive:true, maintainAspectRatio:false, animation:{duration:300},
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{display:false},
+      y:{grid:{color:'rgba(28,45,69,0.5)'},ticks:{color:'#4a6580',font:{family:'Space Mono',size:9}},border:{color:'transparent'}}
+    }
+  };
+
+  rsChart = new Chart(document.getElementById('rsChart'), {
+    type:'line', data:{labels:[],datasets:[{data:[],borderColor:'#00e676',backgroundColor:'rgba(0,230,118,0.05)',borderWidth:2,pointRadius:2,pointBackgroundColor:'#00e676',tension:0.3,fill:true}]},
+    options:{...baseOpts, scales:{...baseOpts.scales, y:{...baseOpts.scales.y, min:0,max:100}}}
+  });
+
+  esChart = new Chart(document.getElementById('esChart'), {
+    type:'line', data:{labels:[],datasets:[{data:[],borderColor:'#ff3d3d',backgroundColor:'rgba(255,61,61,0.05)',borderWidth:2,pointRadius:2,pointBackgroundColor:'#ff3d3d',tension:0.3,fill:true}]},
+    options:{...baseOpts, scales:{...baseOpts.scales, y:{...baseOpts.scales.y, min:0,max:100}}}
+  });
+
+  tierChart = new Chart(document.getElementById('tierChart'), {
+    type:'doughnut',
+    data:{
+      labels:['T1 Normal','T2 CAPTCHA','T3 Throttle','T4 Block'],
+      datasets:[{data:[0,0,0,0],backgroundColor:['rgba(0,230,118,0.7)','rgba(179,136,255,0.7)','rgba(255,179,0,0.7)','rgba(255,61,61,0.7)'],borderColor:['#006633','#4a2d8a','#6b4a00','#6b1a1a'],borderWidth:1}]
+    },
+    options:{responsive:true, maintainAspectRatio:false, animation:{duration:300}, plugins:{legend:{display:true, position:'right', labels:{color:'#4a6580',font:{family:'Space Mono',size:9},padding:10,boxWidth:12}}}}
+  });
+}
+
+async function fetchStats() {
+  try {
+    const r = await fetch(`${API}/admin/stats`);
+    if (!r.ok) return;
+    const d = await r.json();
+    animNum('sTot', d.total); animNum('sBlk', d.blocked); animNum('sThr', d.throttled); animNum('sCap', d.captcha); animNum('sOk',  d.successful);
+    document.getElementById('sDet').textContent = d.detection_rate + '%';
+    document.getElementById('sLat').textContent = d.avg_latency_ms + 'ms';
+
+    if (d.recent_scores?.length) {
+      rsChart.data.labels = d.recent_scores.map((_,i) => i);
+      rsChart.data.datasets[0].data = d.recent_scores.map(r => r.rs);
+      rsChart.data.datasets[0].pointBackgroundColor = d.recent_scores.map(r => r.tier === 4 ? '#ff3d3d' : r.tier === 3 ? '#ffb300' : r.tier === 2 ? '#b388ff' : '#00e676');
+      rsChart.update('none');
+      esChart.data.labels = d.recent_scores.map((_,i) => i);
+      esChart.data.datasets[0].data = d.recent_scores.map(r => r.es);
+      esChart.update('none');
+    }
+    const td = d.tier_distribution || {};
+    tierChart.data.datasets[0].data = [td['1']||0, td['2']||0, td['3']||0, td['4']||0];
+    tierChart.update('none');
+  } catch {}
+}
+
+async function fetchLiveLogs() {
+  try {
+    const r = await fetch(`${API}/admin/logs/live?limit=50`);
+    if (!r.ok) return;
+    const logs = await r.json();
+    if (!logs.length) return;
+    
+    const tbody = document.getElementById('logBody');
+    const emptyRow = tbody.querySelector('.empty-row');
+    if (emptyRow) emptyRow.remove();
+
+    const rendered = new Set([...tbody.querySelectorAll('tr[data-id]')].map(r => r.dataset.id));
+    const newLogs = logs.filter(l => l.id > lastClearedId && !rendered.has(String(l.id)));
+
+    newLogs.forEach(l => {
+      const tr = document.createElement('tr');
+      tr.className = 'new-row'; tr.dataset.id = l.id;
+      const t = new Date(l.timestamp).toTimeString().split(' ')[0];
+      const lat = l.latency_ms ? l.latency_ms.toFixed(2) : '—';
+      const latClass = l.latency_ms < 5 ? 'lat-f' : l.latency_ms < 20 ? 'lat-o' : 'lat-s';
+      tr.innerHTML = `<td style="color:var(--dim)">${t}</td><td style="color:var(--cyan);font-size:10px">${l.ip}</td><td>${l.username}</td><td>${statusChip(l)}</td><td style="color:var(--bright)">${l.rs?.toFixed(1)??'—'}</td><td style="color:var(--bright)">${l.es?.toFixed(1)??'—'}</td><td><span class="tbadge t${l.tier}">T${l.tier}</span></td><td class="${latClass}">${lat}${l.latency_ms?'ms':''}</td><td style="color:var(--dim);font-size:10px">${(l.status||'').substring(0,30)}</td>`;
+      tbody.insertBefore(tr, tbody.firstChild);
+    });
+    
+    while (tbody.rows.length > 100) tbody.deleteRow(tbody.rows.length - 1);
+    document.getElementById('logCnt').textContent = `${tbody.rows.length} requests`;
+  } catch {}
+}
+
+function statusChip(l) {
+  if (l.honeypot) return '<span class="chip chip-hon">🍯 HONEYPOT</span>';
+  const m = {success:'<span class="chip chip-ok">✓ AUTH</span>',invalid_credentials:'<span class="chip chip-inv">✗ INVALID</span>',captcha_required:'<span class="chip chip-cap">⚠ CAPTCHA</span>',throttled:'<span class="chip chip-thr">⏱ THROTTLE</span>',blocked:'<span class="chip chip-blk">🚫 BLOCKED</span>'};
+  return m[l.status] || `<span class="chip chip-inv">${l.status}</span>`;
+}
+
+function animNum(id, target) {
+  const el = document.getElementById(id);
+  const curr = parseInt(el.textContent) || 0;
+  if (curr === target) return;
+  el.textContent = target;
+}
+
+async function clearLog() {
+  try {
+    const r = await fetch(`${API}/admin/logs/live?limit=1`);
+    const logs = await r.json();
+    if (logs.length > 0) { lastClearedId = logs[0].id; }
+  } catch(e) { }
+
+  document.getElementById('logBody').innerHTML = '<tr class="empty-row"><td colspan="9">Log cleared.</td></tr>';
+  document.getElementById('logCnt').textContent = '0 requests';
+}
+
+async function checkHealth() {
+  try {
+    const r = await fetch(`${API}/health`);
+    const d = await r.json();
+    const ok = d.status === 'ok';
+    document.getElementById('healthDot').className = `pulse-dot ${ok?'on':'err'}`;
+    document.getElementById('healthLabel').textContent = ok ? 'ONLINE' : 'DEGRADED';
+  } catch {
+    document.getElementById('healthDot').className = 'pulse-dot err';
+    document.getElementById('healthLabel').textContent = 'OFFLINE';
+  }
+}
+
+async function doLogin() {
+  const ip = document.getElementById('lIp').value.trim() || '127.0.0.1';
+  const user = document.getElementById('lUser').value.trim();
+  const pass = document.getElementById('lPass').value;
+  if (!user) return;
+  await sendReq(ip, user, pass);
+}
+function fill(u, p) { document.getElementById('lUser').value = u; document.getElementById('lPass').value = p; switchTab('login'); }
+document.addEventListener('DOMContentLoaded', () => { document.getElementById('lPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); }); });
+
+async function sendReq(ip, username, password) {
+  try { return await (await fetch(`${API}/test/login`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username, password, simulated_ip: ip}) })).json(); } catch { return null; }
+}
+
+function setAtkUI(r, m, c='') {
+  attackRunning = r;
+  const sb = document.getElementById('stopBtn'); const ab = document.getElementById('autoDemoBtn');
+  sb.style.opacity = r ? '1' : '0.35'; sb.style.pointerEvents = r ? 'auto' : 'none';
+  ab.style.opacity = r ? '0.35' : '1'; ab.style.pointerEvents = r ? 'none' : 'auto';
+  const box = document.getElementById('atkStatus');
+  box.className = 'atk-status ' + c; box.innerHTML = r ? `<span class="spin"></span>${m}` : m;
+}
+
+async function startBF() {
+  if (attackRunning) return;
+  const ip = document.getElementById('aIp').value.trim() || '10.0.0.99'; const u = document.getElementById('aTarget').value.trim() || 'alice';
+  const wl = ['pass1','pass2','pass3','qwerty','letmein','dragon','shadow','sunshine','iloveyou','abc123'];
+  setAtkUI(true, `Brute force → <b>${u}</b> — 0/${wl.length}`, 'running');
+  for (let i=0;i<wl.length;i++) { if (!attackRunning) break; await sendReq(ip, u, wl[i]); setAtkUI(true, `Brute force → <b>${u}</b> — ${i+1}/${wl.length} attempts`, 'running'); await sleep(150); }
+  setAtkUI(false, `✓ Brute force complete.`, 'done');
+}
+async function startCS() {
+  if (attackRunning) return;
+  const ip = document.getElementById('aIp').value.trim() || '10.0.0.99';
+  const accs = [['alice','b1'],['bob','b2'],['charlie','b3'],['dave','b4'],['eve','b5']];
+  setAtkUI(true, `Credential stuffing — 0/${accs.length} accounts`, 'running');
+  for (let i=0;i<accs.length;i++) { if (!attackRunning) break; await sendReq(ip, accs[i][0], accs[i][1]); setAtkUI(true, `Credential stuffing — ${i+1}/${accs.length} tested`, 'running'); await sleep(200); }
+  setAtkUI(false, `✓ Cred stuffing complete.`, 'done');
+}
+async function startLS() {
+  if (attackRunning) return;
+  const ip = document.getElementById('aIp').value.trim() || '10.0.0.99'; const u = document.getElementById('aTarget').value.trim() || 'alice';
+  const attempts = ['stealth1','stealth2','stealth3'];
+  setAtkUI(true, `Low &amp; slow — 0/${attempts.length} (4s intervals)`, 'running');
+  for (let i=0;i<attempts.length;i++) { if (!attackRunning) break; await sendReq(ip, u, attempts[i]); setAtkUI(true, `Low &amp; slow — ${i+1}/${attempts.length} sent`, 'running'); if (i<attempts.length-1) await sleep(4000); }
+  setAtkUI(false, `✓ Low &amp; slow complete.`, 'done');
+}
+async function doHoneypot() { const ip = document.getElementById('aIp').value.trim() || '10.0.0.99'; setAtkUI(false, '🍯 Honeypot triggered.', 'done'); await sendReq(ip, 'honeypot', 'anypassword'); }
+async function sendLegit() {
+  const creds = [['alice','password123'],['bob','securepass'],['charlie','mypassword'],['alice','password123']];
+  setAtkUI(false, 'Sending legitimate logins...', 'running');
+  for (const [u,p] of creds) { await sendReq('10.10.10.10',u,p); await sleep(300); }
+  setAtkUI(false, '✓ Legitimate logins sent.', 'done');
+}
+function stopAtk() { attackRunning = false; setAtkUI(false, '⏹ Stopped by user.', ''); }
+async function startAutoDemo() {
+  if (attackRunning) return; switchTab('attack'); attackRunning = true;
+  const steps = [
+    { label: '💀 Brute force attack...', fn: async () => { for(let i=0;i<6;i++){ if(!attackRunning)break; await sendReq('172.16.0.1','alice','bad'); await sleep(150); } } },
+    { label: '🔄 Credential stuffing...', fn: async () => { for(const u of ['alice','bob','eve']){ if(!attackRunning)break; await sendReq('172.16.0.2',u,'bad'); await sleep(200); } } }
+  ];
+  for (let i=0; i<steps.length; i++) {
+    if (!attackRunning) break;
+    document.getElementById('demoBar').style.width = Math.round((i/steps.length)*100)+'%';
+    const box = document.getElementById('atkStatus'); box.className = 'atk-status demo'; box.innerHTML = `<span class="spin"></span>${steps[i].label}`;
+    await steps[i].fn(); await sleep(600);
+  }
+  document.getElementById('demoBar').style.width = '100%'; attackRunning = false;
+  setAtkUI(false, '✅ Auto demo complete.', 'done'); setTimeout(() => { document.getElementById('demoBar').style.width = '0%'; }, 3000);
+}
+
+async function checkIp() {
+  const ip = document.getElementById('admIp').value.trim(); if (!ip) return;
+  try {
+    const r = await fetch(`${API}/admin/status/${ip}`); const d = await r.json(); const box = document.getElementById('admBox'); box.style.display = 'block';
+    box.innerHTML = `<div class="ar"><span class="ak">IP</span><span class="av">${d.ip}</span></div><div class="ar"><span class="ak">Blocked</span><span class="av ${d.blocked?'red':'grn'}">${d.blocked?'🚫 YES':'✓ No'}</span></div><div class="ar"><span class="ak">Throttled</span><span class="av ${d.throttled?'amber':'grn'}">${d.throttled?'⏱ YES':'✓ No'}</span></div><div class="ar"><span class="ak">Fails</span><span class="av">${d.fails}</span></div><div class="ar"><span class="ak">Rs</span><span class="av">${d.reputation_score}</span></div><div class="ar"><span class="ak">Es</span><span class="av">${d.evasion_score}</span></div>`;
+  } catch(e) { document.getElementById('admBox').textContent = 'Error: '+e.message; }
+}
+
+async function unblockIp() {
+  const ip = document.getElementById('admIp').value.trim(); if (!ip || !confirm(`Reset ${ip}?`)) return;
+  await fetch(`${API}/admin/unblock/${ip}`, {method:'DELETE'}); document.getElementById('admBox').style.display = 'block'; document.getElementById('admBox').innerHTML = `<span style="color:var(--green)">✓ ${ip} reset.</span>`;
+}
+
+async function viewAllIps() {
+  try {
+    const r = await fetch(`${API}/admin/all-ips`);
+    const d = await r.json();
+    const box = document.getElementById('allIpsBox');
+    box.style.display = 'block';
+    
+    let html = `<div style="margin-bottom:8px;"><strong style="color:var(--cyan)">SQLite (Historical): ${d.sqlite_historical_count}</strong><br>`;
+    html += d.sqlite_historical_ips.length ? d.sqlite_historical_ips.join(', ') : 'None';
+    html += `</div>`;
+    
+    html += `<div><strong style="color:var(--purple)">Redis (Active): ${d.redis_active_count}</strong><br>`;
+    html += d.redis_active_ips.length ? d.redis_active_ips.join(', ') : 'None';
+    html += `</div>`;
+    
+    box.innerHTML = html;
+  } catch(e) {
+    document.getElementById('allIpsBox').textContent = 'Error: ' + e.message;
+    document.getElementById('allIpsBox').style.display = 'block';
+  }
+}
+
+// ── NEW FACTORY RESET FUNCTION ──
+async function factoryReset() {
+  if (!confirm("⚠️ Are you sure you want to completely wipe all historical logs and active penalties? Your registered users will be kept.")) return;
+  try {
+    await fetch(`${API}/admin/factory-reset`, { method: 'DELETE' });
+    
+    // Refresh the UI completely
+    lastClearedId = 0;
+    document.getElementById('logBody').innerHTML = '<tr class="empty-row"><td colspan="9">Log cleared.</td></tr>';
+    document.getElementById('logCnt').textContent = '0 requests';
+    
+    document.getElementById('allIpsBox').style.display = 'none';
+    
+    fetchStats();
+    loadAllPenalties();
+    
+    alert("Factory Reset Complete. The system has a clean slate.");
+  } catch(e) {
+    alert("Error performing reset: " + e.message);
+  }
+}
+
+function setApi() { API = document.getElementById('apiInput').value.trim().replace(/\/$/,''); checkHealth(); }
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+async function loadAllPenalties() {
+  try {
+    const r = await fetch(`${API}/admin/blocked-ips`);
+    const d = await r.json();
+    const grid = document.getElementById('hardBlockGrid');
+    document.getElementById('hardBlockCount').textContent = `${d.total || 0} IPs`;
+    
+    if (!d.blocked_ips || !d.blocked_ips.length) {
+      grid.innerHTML = '<div class="banned-empty">No IPs currently hard-blocked.</div>';
+    } else {
+      grid.innerHTML = d.blocked_ips.map(b => `
+        <div class="ban-card hard" id="ban-${b.ip.replace(/\./g,'-')}">
+          <div class="ban-card-top"><div class="ban-ip">${b.ip}</div><div class="ban-status"><div class="ban-dot"></div>BLOCKED</div></div>
+          <div class="ban-ttl">⏱ ${b.ttl_human}</div>
+          <div class="ban-reason">Tier 4 — IP mathematically exhausted or tripped honeypot.</div>
+          <button class="ban-unblock" onclick="unblockFromPanel('${b.ip}')">✓ Unblock IP</button>
+        </div>
+      `).join('');
+    }
+  } catch(e) { console.error("Blocks error", e); }
+
+  try {
+    const r2 = await fetch(`${API}/admin/throttled-ips`);
+    const d2 = await r2.json();
+    const grid2 = document.getElementById('throttleGrid');
+    document.getElementById('throttleCount').textContent = `${d2.total || 0} IPs`;
+
+    if (!d2.throttled_ips || !d2.throttled_ips.length) {
+      grid2.innerHTML = '<div class="banned-empty">No IPs currently throttled.</div>';
+    } else {
+      grid2.innerHTML = d2.throttled_ips.map(b => `
+        <div class="ban-card throttle" id="ban-${b.ip.replace(/\./g,'-')}">
+          <div class="ban-card-top"><div class="ban-ip">${b.ip}</div><div class="ban-status"><div class="ban-dot"></div>THROTTLED</div></div>
+          <div class="ban-ttl">⏱ ${b.ttl_human}</div>
+          <div class="ban-reason">Tier 3 — Spatial or temporal anomaly detected (High Es).</div>
+          <button class="ban-unblock" onclick="unblockFromPanel('${b.ip}')">✓ Remove Throttle</button>
+        </div>
+      `).join('');
+    }
+  } catch(e) { console.error("Throttle error", e); }
+}
+
+async function unblockFromPanel(ip) {
+  if (!confirm(`Remove penalties for ${ip}?`)) return;
+  await fetch(`${API}/admin/unblock/${ip}`, {method:'DELETE'});
+  loadAllPenalties();
+}
+
+async function clearAllPenalties() {
+  if (!confirm(`Wipe all blocks and throttles from Redis?`)) return;
+  const r1 = await fetch(`${API}/admin/blocked-ips`); const d1 = await r1.json();
+  const r2 = await fetch(`${API}/admin/throttled-ips`); const d2 = await r2.json();
+  const allIps = [...new Set([...(d1.blocked_ips||[]).map(x=>x.ip), ...(d2.throttled_ips||[]).map(x=>x.ip)])];
+  for (const ip of allIps) { await fetch(`${API}/admin/unblock/${ip}`, {method:'DELETE'}); }
+  loadAllPenalties();
+}
+
+initCharts(); checkHealth(); fetchStats(); fetchLiveLogs();
+setInterval(checkHealth, 10000); setInterval(fetchStats, 3000); setInterval(fetchLiveLogs, 2500); setInterval(loadAllPenalties, 5000);
+loadAllPenalties();
+</script>
+</body>
+</html>

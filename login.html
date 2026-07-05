@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexus Cloud | Secure Vault</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #0a0a0a; color: #e5e5e5; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .bg-glow { position: absolute; width: 600px; height: 600px; background: radial-gradient(circle, rgba(0,200,255,0.05) 0%, rgba(0,0,0,0) 70%); top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: -1; }
+  .login-card { background: #121212; border: 1px solid #262626; border-radius: 12px; width: 100%; max-width: 400px; padding: 40px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
+  .logo { text-align: center; font-size: 24px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.5px; }
+  .logo span { color: #00c8ff; }
+  .subtitle { text-align: center; font-size: 14px; color: #737373; margin-bottom: 24px; }
+  .tabs { display: flex; margin-bottom: 24px; border-bottom: 1px solid #262626; }
+  .tab { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 500; color: #737373; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+  .tab.active { color: #00c8ff; border-bottom-color: #00c8ff; }
+  .input-group { margin-bottom: 20px; }
+  .input-group label { display: block; font-size: 12px; font-weight: 500; color: #a3a3a3; margin-bottom: 8px; }
+  .input-group input { width: 100%; padding: 12px 16px; background: #000; border: 1px solid #262626; border-radius: 6px; color: #fff; font-size: 14px; outline: none; transition: border 0.2s; }
+  .input-group input:focus { border-color: #00c8ff; }
+  
+  /* Styling specifically for the IP override box */
+  .ip-override { border: 1px dashed #00c8ff !important; color: #00c8ff !important; font-family: monospace !important; }
+
+  .btn { width: 100%; padding: 12px; background: #fff; color: #000; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+  .btn:hover { background: #e5e5e5; }
+  .btn:disabled { background: #404040; color: #737373; cursor: not-allowed; }
+  .alert { padding: 12px; border-radius: 6px; font-size: 13px; font-weight: 500; margin-bottom: 20px; display: none; text-align: center; }
+  .alert-error { background: rgba(255,68,68,0.1); color: #ff4444; border: 1px solid rgba(255,68,68,0.2); }
+  .alert-warn { background: rgba(255,179,0,0.1); color: #ffb300; border: 1px solid rgba(255,179,0,0.2); }
+  .alert-success { background: rgba(0,230,118,0.1); color: #00e676; border: 1px solid rgba(0,230,118,0.2); }
+  .hard-block-overlay { position: absolute; inset: 0; background: #1a0505; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; display: none; border: 1px solid #ff4444; border-radius: 12px; }
+  .hard-block-overlay h2 { color: #ff4444; font-size: 20px; margin-bottom: 12px; }
+  .hard-block-overlay p { color: #a3a3a3; font-size: 13px; line-height: 1.5; }
+  .captcha-box { background: #000; border: 1px solid #262626; border-radius: 6px; padding: 16px; margin-bottom: 20px; display: none; align-items: center; gap: 12px; }
+  .captcha-checkbox { width: 24px; height: 24px; border: 2px solid #525252; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
+  .captcha-checkbox.checked { background: #00e676; border-color: #00e676; }
+  .captcha-text { font-size: 13px; color: #a3a3a3; }
+  @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+  .shake { animation: shake 0.3s ease-in-out; }
+</style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+<div class="login-card" id="loginCard">
+  <div class="hard-block-overlay" id="blockScreen">
+    <h2>Access Denied</h2>
+    <p>Your IP address has been flagged for malicious activity and is blocked for 24 hours.</p>
+    <p style="margin-top: 20px; font-size: 11px; color: #ff4444;">ERR_INTERCEPT_TIER4</p>
+  </div>
+  <div class="logo">Nexus<span>Cloud</span></div>
+  <div class="subtitle" id="subtitleText">Enter your credentials to access the vault.</div>
+  
+  <div class="tabs">
+    <div class="tab active" id="tabSignIn" onclick="switchMode('signin')">Sign In</div>
+    <div class="tab" id="tabSignUp" onclick="switchMode('signup')">Create Account</div>
+  </div>
+
+  <div class="alert alert-error" id="errorAlert"></div>
+  <div class="alert alert-warn" id="warnAlert"></div>
+  <div class="alert alert-success" id="successAlert"></div>
+  
+  <form id="authForm">
+    <div class="input-group" id="ipGroup">
+      <label>Simulated IP (Demo Mode)</label>
+      <input type="text" id="simIp" class="ip-override" value="127.0.0.1" required>
+    </div>
+
+    <div class="input-group">
+      <label>Username</label>
+      <input type="text" id="username" placeholder="alice" required>
+    </div>
+    <div class="input-group">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="••••••••" required>
+    </div>
+
+    <div class="captcha-box" id="captchaBox">
+      <div class="captcha-checkbox" id="captchaCheck" onclick="solveCaptcha()"></div>
+      <div class="captcha-text">I am human</div>
+    </div>
+    
+    <button type="submit" class="btn" id="submitBtn">Sign In</button>
+  </form>
+</div>
+
+<script>
+  let isSignUp = false;
+  let captchaSolved = false;
+  const form = document.getElementById('authForm');
+  const errorAlert = document.getElementById('errorAlert');
+  const warnAlert = document.getElementById('warnAlert');
+  const successAlert = document.getElementById('successAlert');
+  const blockScreen = document.getElementById('blockScreen');
+  const captchaBox = document.getElementById('captchaBox');
+  const captchaCheck = document.getElementById('captchaCheck');
+  const submitBtn = document.getElementById('submitBtn');
+  const ipGroup = document.getElementById('ipGroup');
+
+  function switchMode(mode) {
+    hideAlerts();
+    captchaBox.style.display = 'none';
+    isSignUp = (mode === 'signup');
+    document.getElementById('tabSignIn').classList.toggle('active', !isSignUp);
+    document.getElementById('tabSignUp').classList.toggle('active', isSignUp);
+    document.getElementById('subtitleText').textContent = isSignUp ? "Register a new secure account." : "Enter your credentials to access the vault.";
+    submitBtn.textContent = isSignUp ? "Create Account" : "Sign In";
+    
+    // Hide IP simulator on registration, show on sign in
+    ipGroup.style.display = isSignUp ? 'none' : 'block';
+  }
+
+  function hideAlerts() {
+    errorAlert.style.display = 'none';
+    warnAlert.style.display = 'none';
+    successAlert.style.display = 'none';
+    document.getElementById('loginCard').classList.remove('shake');
+  }
+
+  function solveCaptcha() {
+    captchaCheck.classList.add('checked');
+    captchaSolved = true;
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Verify & Sign In';
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideAlerts();
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Processing...';
+
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const simIp = document.getElementById('simIp').value;
+
+    // Use /test/login so we can force our fake IP into the system
+    const endpoint = isSignUp ? 'http://localhost:8000/auth/register' : 'http://localhost:8000/test/login';
+
+    const payload = isSignUp ? { username, password } : { username, password, simulated_ip: simIp };
+    
+    if (!isSignUp && captchaSolved) {
+      payload.captcha_token = "mock-valid-token";
+    }
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+
+      if (isSignUp) {
+        if (response.status === 200) {
+          successAlert.textContent = data.message;
+          successAlert.style.display = 'block';
+          setTimeout(() => switchMode('signin'), 2000);
+        } else {
+          errorAlert.textContent = data.message;
+          errorAlert.style.display = 'block';
+        }
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Account';
+        return;
+      }
+
+      if (response.status === 200) {
+        successAlert.textContent = "Authentication successful! Redirecting...";
+        successAlert.style.display = 'block';
+        submitBtn.style.display = 'none';
+        captchaBox.style.display = 'none';
+        
+        // Reset button after fake redirect
+        setTimeout(() => {
+          successAlert.style.display = 'none';
+          submitBtn.style.display = 'block';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign In';
+        }, 3000);
+      } 
+      else if (response.status === 401 || response.status === 400) {
+        errorAlert.textContent = data.message;
+        errorAlert.style.display = 'block';
+        document.getElementById('loginCard').classList.add('shake');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign In';
+      }
+      else if (response.status === 429) {
+        if (data.captcha_required) {
+          errorAlert.textContent = "Unusual activity detected.";
+          errorAlert.style.display = 'block';
+          captchaBox.style.display = 'flex';
+          submitBtn.textContent = 'Solve CAPTCHA to continue';
+          captchaSolved = false;
+          captchaCheck.classList.remove('checked');
+        } else {
+          warnAlert.textContent = data.message;
+          warnAlert.style.display = 'block';
+          document.getElementById('loginCard').classList.add('shake');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign In';
+        }
+      }
+      else if (response.status === 403) {
+        blockScreen.style.display = 'flex';
+        // Reset overlay if IP is changed later
+        setTimeout(() => {
+            blockScreen.addEventListener('click', () => {
+                blockScreen.style.display = 'none';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign In';
+            }, {once:true})
+        }, 1000);
+      }
+    } catch (err) {
+      errorAlert.textContent = 'Unable to reach authentication server.';
+      errorAlert.style.display = 'block';
+      submitBtn.disabled = false;
+      submitBtn.textContent = isSignUp ? 'Create Account' : 'Sign In';
+    }
+  });
+</script>
+</body>
+</html>
