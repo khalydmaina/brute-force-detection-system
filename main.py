@@ -2,11 +2,16 @@
 THE DETECTION SYSTEM — FastAPI Authentication Gateway
 ===================================================
 """
+import os
 import time
+import asyncio
+import hmac
+import ipaddress
 import bcrypt
+import httpx
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request, Depends, status
+from fastapi import FastAPI, Request, Depends, status, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
@@ -18,13 +23,42 @@ from config import (
 )
 from models import LoginRequest, TestLoginRequest, InterceptResponse, IPStatusResponse
 from redis_client import get_redis, close_redis
-from database import get_db, AuditLog, User
+from database import get_db, AuditLog, User, SessionLocal
 from scoring import (
     get_ip_state, get_username_ip_count, update_ip_state,
     compute_reputation_score, compute_evasion_score, compute_timing_anomaly,
     set_hard_block, remove_hard_block, is_blocked, set_throttle, is_throttled,
     clear_ip_state,
+    get_context_signals, record_suspect, record_good, record_cold_attempt,
 )
+from config import ACCOUNT_SIGNALS
+
+
+# ─────────────────────────────────────────────
+# Security configuration (revision hardening)
+# ─────────────────────────────────────────────
+ADMIN_API_KEY     = os.getenv("ADMIN_API_KEY", "")            # required for all /admin routes
+TRUSTED_PROXIES   = [ipaddress.ip_network(p.strip()) for p in os.getenv("TRUSTED_PROXIES", "").split(",") if p.strip()]
+ENABLE_SIMULATION = os.getenv("ENABLE_SIMULATION", "0") == "1"  # /test/login only in lab mode
+TURNSTILE_SECRET  = os.getenv("TURNSTILE_SECRET", "")          # Cloudflare Turnstile server-side secret
+
+async def require_admin(x_admin_key: str = Header(default="")):
+    if not ADMIN_API_KEY or not hmac.compare_digest(x_admin_key, ADMIN_API_KEY):
+        raise HTTPException(status_code=401, detail="Admin authentication required")
+
+async def verify_captcha(token, client_ip: str) -> bool:
+    """Server-side CAPTCHA verification. Static tokens are accepted only in simulation mode."""
+    if not token:
+        return False
+    if TURNSTILE_SECRET:
+        try:
+            async with httpx.AsyncClient(timeout=5) as c:
+                r = await c.post("https://challenges.cloudflare.com/turnstile/v0/siteverify",
+                                 data={"secret": TURNSTILE_SECRET, "response": token, "remoteip": client_ip})
+            return bool(r.json().get("success"))
+        except Exception:
+            return False
+    return ENABLE_SIMULATION and token == "mock-valid-token"
 
 # ─────────────────────────────────────────────
 # Application lifecycle
@@ -32,7 +66,9 @@ from scoring import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    writer = asyncio.create_task(_audit_writer())
     yield
+    writer.cancel()
     await close_redis()
 
 app = FastAPI(
@@ -99,21 +135,35 @@ async def _process_login(
         _log_to_db(db, client_ip, username, response_data)
         return JSONResponse(status_code=status_code, content=response_data)
 
-    if rs < RS_TIER2_LIMIT and captcha_token != "mock-valid-token":
+    # Tier 2 challenge: low IP reputation, OR (revision) the target account / whole endpoint is under
+    # distributed attack and this IP has no history of successful authentication.
+    warm = state["successes"] > 0
+    reason = "low_reputation" if rs < RS_TIER2_LIMIT else None
+    if ACCOUNT_SIGNALS and reason is None:
+        ctx = await get_context_signals(redis, client_ip, username)
+        if ctx["acct_attack"] and not ctx["known_ip"]:
+            reason = "account_under_attack"
+        elif ctx["global_attack"] and not warm and not ctx["known_ip"]:
+            reason = "global_under_attack"
+    if reason and not await verify_captcha(captcha_token, client_ip):
+        if ACCOUNT_SIGNALS:
+            await record_suspect(redis, client_ip, username, warm)
         status_code = 429
-        response_data.update({"status": "captcha_required", "message": "CAPTCHA challenge required to verify humanity.", "tier": 2, "rs": rs, "es": es, "captcha_required": True, "latency_ms": _ms(t0)})
+        response_data.update({"status": "captcha_required", "message": "CAPTCHA challenge required to verify humanity.", "tier": 2, "rs": rs, "es": es, "captcha_required": True, "reason": reason, "latency_ms": _ms(t0)})
         _log_to_db(db, client_ip, username, response_data)
         return JSONResponse(status_code=status_code, content=response_data)
 
-    user_record = db.query(User).filter(User.username == username).first()
-    success = False
-    
-    if user_record:
-        candidate_bytes = password.encode('utf-8')
-        stored_hash_bytes = user_record.password_hash.encode('utf-8')
-        success = bcrypt.checkpw(candidate_bytes, stored_hash_bytes)
+    t_detect_ms = _ms(t0)  # INSTRUMENTATION: detection overhead before credential check
+    success = await asyncio.to_thread(_check_credentials, username, password)
 
     await update_ip_state(redis, client_ip, username, success)
+    if ACCOUNT_SIGNALS:
+        if success:
+            await record_good(redis, client_ip, username)
+            if not warm:
+                await record_cold_attempt(redis, client_ip)
+        else:
+            await record_suspect(redis, client_ip, username, warm)
     
     state_updated = await get_ip_state(redis, client_ip)
     final_rs = compute_reputation_score(state_updated["fails"], state_updated["successes"], state_updated["last_attempt"])
@@ -130,6 +180,7 @@ async def _process_login(
             status_code = 401
             response_data.update({"status": "invalid_credentials", "message": "Invalid credentials provided.", "tier": 1, "rs": final_rs, "es": es, "latency_ms": _ms(t0)})
 
+    response_data["detect_ms"] = t_detect_ms
     _log_to_db(db, client_ip, username, response_data)
     return JSONResponse(status_code=status_code, content=response_data)
 
@@ -149,7 +200,7 @@ async def register_user(payload: LoginRequest, db: Session = Depends(get_db)):
     
     password_bytes = payload.password.encode('utf-8')
     salt = bcrypt.gensalt()
-    hashed_password = bcrypt.hashpw(password_bytes, salt).decode('utf-8')
+    hashed_password = (await asyncio.to_thread(bcrypt.hashpw, password_bytes, salt)).decode('utf-8')
     
     new_user = User(
         username=payload.username.strip().lower(),
@@ -160,20 +211,24 @@ async def register_user(payload: LoginRequest, db: Session = Depends(get_db)):
     return {"message": "Account created successfully! You may now sign in."}
 
 @app.post("/auth/login", response_model=InterceptResponse, tags=["Authentication"])
-async def production_login(payload: LoginRequest, request: Request, db: Session = Depends(get_db)):
+async def production_login(payload: LoginRequest, request: Request):
+    db = None
     client_ip = _extract_ip(request)
     return await _process_login(payload.username, payload.password, client_ip, db, payload.captcha_token)
 
 @app.post("/test/login", response_model=InterceptResponse, tags=["Simulation"])
-async def simulation_login(payload: TestLoginRequest, db: Session = Depends(get_db)):
+async def simulation_login(payload: TestLoginRequest):
+    db = None
+    if not ENABLE_SIMULATION:
+        raise HTTPException(status_code=404, detail="Not found")
     return await _process_login(payload.username, payload.password, payload.simulated_ip, db, payload.captcha_token)
 
-@app.get("/admin/logs/live", tags=["Admin"])
+@app.get("/admin/logs/live", tags=["Admin"], dependencies=[Depends(require_admin)])
 async def get_live_logs(limit: int = 20, db: Session = Depends(get_db)):
     logs = db.query(AuditLog).order_by(AuditLog.id.desc()).limit(limit).all()
     return [{"id": log.id, "timestamp": log.timestamp.isoformat(), "ip": log.ip_address, "username": log.target_username, "status": log.status, "rs": log.rs, "es": log.es, "tier": log.tier, "latency_ms": log.latency_ms, "honeypot": log.honeypot_triggered} for log in logs]
 
-@app.get("/admin/stats", tags=["Admin"])
+@app.get("/admin/stats", tags=["Admin"], dependencies=[Depends(require_admin)])
 async def get_stats(db: Session = Depends(get_db)):
     total    = db.query(AuditLog).count()
     blocked  = db.query(AuditLog).filter(AuditLog.tier == 4).count()
@@ -195,7 +250,7 @@ async def get_stats(db: Session = Depends(get_db)):
 
     return {"total": total, "blocked": blocked, "throttled": throttled, "captcha": captcha, "successful": success, "honeypot_hits": honeypots, "avg_latency_ms": avg_latency, "detection_rate": detection_rate, "unique_ips": unique_ips, "recent_scores": recent_list, "tier_distribution": tier_dist}
 
-@app.get("/admin/all-ips", tags=["Admin"])
+@app.get("/admin/all-ips", tags=["Admin"], dependencies=[Depends(require_admin)])
 async def get_all_ips(db: Session = Depends(get_db)):
     sqlite_ips = db.query(func.distinct(AuditLog.ip_address)).all()
     historical_ips = [ip[0] for ip in sqlite_ips]
@@ -213,7 +268,7 @@ async def get_all_ips(db: Session = Depends(get_db)):
             
     return {"sqlite_historical_count": len(historical_ips), "sqlite_historical_ips": historical_ips, "redis_active_count": len(active_redis_ips), "redis_active_ips": list(active_redis_ips)}
 
-@app.get("/admin/blocked-ips", tags=["Admin"])
+@app.get("/admin/blocked-ips", tags=["Admin"], dependencies=[Depends(require_admin)])
 async def get_blocked_ips():
     redis = await get_redis()
     blocked_ips = []
@@ -229,7 +284,7 @@ async def get_blocked_ips():
     blocked_ips.sort(key=lambda x: x["ttl_seconds"], reverse=True)
     return {"blocked_ips": blocked_ips, "total": len(blocked_ips)}
 
-@app.get("/admin/throttled-ips", tags=["Admin"])
+@app.get("/admin/throttled-ips", tags=["Admin"], dependencies=[Depends(require_admin)])
 async def get_throttled_ips():
     redis = await get_redis()
     throttled_ips = []
@@ -245,7 +300,7 @@ async def get_throttled_ips():
     throttled_ips.sort(key=lambda x: x["ttl_seconds"], reverse=True)
     return {"throttled_ips": throttled_ips, "total": len(throttled_ips)}
 
-@app.get("/admin/status/{ip}", response_model=IPStatusResponse, tags=["Admin"])
+@app.get("/admin/status/{ip}", response_model=IPStatusResponse, tags=["Admin"], dependencies=[Depends(require_admin)])
 async def get_ip_metrics(ip: str):
     redis = await get_redis()
     state = await get_ip_state(redis, ip)
@@ -258,7 +313,7 @@ async def get_ip_metrics(ip: str):
     es = compute_evasion_score(unique_ips, unique_users, t_anomaly)
     return IPStatusResponse(ip=ip, blocked=blocked, throttled=throttled, fails=state["fails"], successes=state["successes"], reputation_score=round(rs, 2), username_diversity=unique_users, ip_diversity=unique_ips, timing_anomaly=round(t_anomaly, 4), evasion_score=round(es, 2))
 
-@app.delete("/admin/unblock/{ip}", tags=["Admin"])
+@app.delete("/admin/unblock/{ip}", tags=["Admin"], dependencies=[Depends(require_admin)])
 async def unblock_ip(ip: str):
     redis = await get_redis()
     await clear_ip_state(redis, ip)
@@ -267,7 +322,7 @@ async def unblock_ip(ip: str):
     return {"message": f"IP {ip} fully reset. All counters, throttles, and blocks cleared."}
 
 # ── NEW MASTER RESET ENDPOINT ──
-@app.delete("/admin/factory-reset", tags=["Admin"])
+@app.delete("/admin/factory-reset", tags=["Admin"], dependencies=[Depends(require_admin)])
 async def factory_reset(db: Session = Depends(get_db)):
     """Flushes all Redis RAM locks/scores and deletes all SQLite traffic logs. Keeps Users intact."""
     # 1. Flush Redis Short-Term Memory
@@ -295,24 +350,66 @@ async def health():
 # Utilities
 # ─────────────────────────────────────────────
 
-def _log_to_db(db: Session, ip: str, username: str, response_data: dict):
-    log_entry = AuditLog(
-        ip_address=ip,
-        target_username=username,
-        status=response_data.get("status"),
-        rs=response_data.get("rs", 0.0),
-        es=response_data.get("es", 0.0),
-        tier=response_data.get("tier", 1),
-        latency_ms=response_data.get("latency_ms", 0.0),
-        honeypot_triggered=response_data.get("honeypot_triggered", False)
-    )
-    db.add(log_entry)
-    db.commit()
+AUDIT_QUEUE: "asyncio.Queue[dict]" = asyncio.Queue(maxsize=100_000)
+
+def _log_to_db(db, ip: str, username: str, response_data: dict):
+    """Non-blocking: enqueue the audit record; a single background writer persists it."""
+    try:
+        AUDIT_QUEUE.put_nowait(dict(
+            ip_address=ip, target_username=username,
+            status=response_data.get("status"), rs=response_data.get("rs", 0.0),
+            es=response_data.get("es", 0.0), tier=response_data.get("tier", 1),
+            latency_ms=response_data.get("latency_ms", 0.0),
+            honeypot_triggered=response_data.get("honeypot_triggered", False)))
+    except asyncio.QueueFull:
+        pass  # shed audit load rather than blocking authentication
+
+def _write_audit_batch(rows):
+    db = SessionLocal()
+    try:
+        db.bulk_insert_mappings(AuditLog, rows); db.commit()
+    finally:
+        db.close()
+
+async def _audit_writer():
+    while True:
+        rows = [await AUDIT_QUEUE.get()]
+        while not AUDIT_QUEUE.empty() and len(rows) < 500:
+            rows.append(AUDIT_QUEUE.get_nowait())
+        try:
+            await asyncio.to_thread(_write_audit_batch, rows)
+        except Exception:
+            pass
+
+def _check_credentials(username: str, password: str) -> bool:
+    """Runs in a worker thread: user lookup + bcrypt must not block the event loop."""
+    db = SessionLocal()
+    try:
+        rec = db.query(User).filter(User.username == username).first()
+        if not rec:
+            return False
+        return bcrypt.checkpw(password.encode("utf-8"), rec.password_hash.encode("utf-8"))
+    finally:
+        db.close()
+
+def _is_trusted(ip: str) -> bool:
+    try:
+        return any(ipaddress.ip_address(ip) in net for net in TRUSTED_PROXIES)
+    except ValueError:
+        return False
 
 def _extract_ip(request: Request) -> str:
+    """Honour X-Forwarded-For only when the direct peer is a configured trusted proxy,
+    and take the right-most address that is not itself a trusted proxy
+    (left-most entries are client-controlled and can be spoofed)."""
+    peer = request.client.host if request.client else "0.0.0.0"
     xff = request.headers.get("X-Forwarded-For")
-    if xff: return xff.split(",")[0].strip()
-    return request.client.host or "0.0.0.0"
+    if not xff or not _is_trusted(peer):
+        return peer
+    for hop in reversed([h.strip() for h in xff.split(",") if h.strip()]):
+        if not _is_trusted(hop):
+            return hop
+    return peer
 
 def _ms(t0: float) -> float:
     return round((time.perf_counter() - t0) * 1000, 2)

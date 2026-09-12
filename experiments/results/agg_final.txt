@@ -1,0 +1,154 @@
+
+===== original scoring: 3 seeds, requests/run=[868, 869, 857], attack/run=[660, 660, 660], client errors=[0, 0, 0]
+  benign outcomes: [{'benign': 208, 'challenged': 0, 'denied': 53, 'challenge_then_success': 0, 'reasons': {}}, {'benign': 209, 'challenged': 0, 'denied': 40, 'challenge_then_success': 0, 'reasons': {}}, {'benign': 197, 'challenged': 0, 'denied': 38, 'challenge_then_success': 0, 'reasons': {}}]
+  [ours] acc 0.606 ± 0.008 | prec 0.893 ± 0.018 | rec 0.549 ± 0.002 | FPR 0.213 ± 0.036 | mean TP/FN/FP/TN 362.7/297.3/43.7/161
+      A1-vertical        {'campaigns': 15, 'flagged': 15, 'mean_delay': 2.13, 'fp_requests': 0, 'requests': 600}
+      A2-stuffing        {'campaigns': 15, 'flagged': 15, 'mean_delay': 4, 'fp_requests': 0, 'requests': 450}
+      A3-lowslow         {'campaigns': 9, 'flagged': 9, 'mean_delay': 2.22, 'fp_requests': 0, 'requests': 135}
+      A4-honeypot        {'campaigns': 15, 'flagged': 15, 'mean_delay': 0, 'fp_requests': 0, 'requests': 15}
+      A5-dist-stuffing   {'campaigns': 3, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 600}
+      A6-dist-brute      {'campaigns': 3, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 180}
+      B1-normal          {'campaigns': 90, 'flagged': 32, 'mean_delay': None, 'fp_requests': 42, 'requests': 194}
+      B2-typo            {'campaigns': 60, 'flagged': 21, 'mean_delay': None, 'fp_requests': 34, 'requests': 184}
+      B3-nat             {'campaigns': 9, 'flagged': 9, 'mean_delay': None, 'fp_requests': 49, 'requests': 72}
+      B4-pwmgr           {'campaigns': 30, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 30}
+      B5-multidevice     {'campaigns': 15, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 45}
+      B6-returning       {'campaigns': 60, 'flagged': 6, 'mean_delay': None, 'fp_requests': 6, 'requests': 89}
+  [f2b] acc 0.618 ± 0.003 | prec 1.000 ± 0.000 | rec 0.500 ± 0.000 | FPR 0.000 ± 0.000 | mean TP/FN/FP/TN 330/330/0/204.7
+      A1-vertical        {'campaigns': 15, 'flagged': 15, 'mean_delay': 5, 'fp_requests': 0, 'requests': 600}
+      A2-stuffing        {'campaigns': 15, 'flagged': 15, 'mean_delay': 5, 'fp_requests': 0, 'requests': 450}
+      A3-lowslow         {'campaigns': 9, 'flagged': 9, 'mean_delay': 5, 'fp_requests': 0, 'requests': 135}
+      A4-honeypot        {'campaigns': 15, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 15}
+      A5-dist-stuffing   {'campaigns': 3, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 600}
+      A6-dist-brute      {'campaigns': 3, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 180}
+      B1-normal          {'campaigns': 90, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 194}
+      B2-typo            {'campaigns': 60, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 184}
+      B3-nat             {'campaigns': 9, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 72}
+      B4-pwmgr           {'campaigns': 30, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 30}
+      B5-multidevice     {'campaigns': 15, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 45}
+      B6-returning       {'campaigns': 60, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 89}
+  [lockout] acc 0.675 ± 0.012 | prec 0.883 ± 0.017 | rec 0.662 ± 0.004 | FPR 0.283 ± 0.039 | mean TP/FN/FP/TN 436.7/223.3/58/146.7
+      A1-vertical        {'campaigns': 15, 'flagged': 15, 'mean_delay': 1, 'fp_requests': 0, 'requests': 600}
+      A2-stuffing        {'campaigns': 15, 'flagged': 15, 'mean_delay': 9.6, 'fp_requests': 0, 'requests': 450}
+      A3-lowslow         {'campaigns': 9, 'flagged': 9, 'mean_delay': 1.67, 'fp_requests': 0, 'requests': 135}
+      A4-honeypot        {'campaigns': 15, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 15}
+      A5-dist-stuffing   {'campaigns': 3, 'flagged': 3, 'mean_delay': 7, 'fp_requests': 0, 'requests': 600}
+      A6-dist-brute      {'campaigns': 3, 'flagged': 3, 'mean_delay': 4.33, 'fp_requests': 0, 'requests': 180}
+      B1-normal          {'campaigns': 90, 'flagged': 25, 'mean_delay': None, 'fp_requests': 47, 'requests': 194}
+      B2-typo            {'campaigns': 60, 'flagged': 34, 'mean_delay': None, 'fp_requests': 62, 'requests': 184}
+      B3-nat             {'campaigns': 9, 'flagged': 9, 'mean_delay': None, 'fp_requests': 22, 'requests': 72}
+      B4-pwmgr           {'campaigns': 30, 'flagged': 10, 'mean_delay': None, 'fp_requests': 10, 'requests': 30}
+      B5-multidevice     {'campaigns': 15, 'flagged': 5, 'mean_delay': None, 'fp_requests': 9, 'requests': 45}
+      B6-returning       {'campaigns': 60, 'flagged': 20, 'mean_delay': None, 'fp_requests': 24, 'requests': 89}
+  detection overhead ms: {'n': 2594, 'p50': 0.58, 'p95': 8.0, 'p99': 12.37, 'max': 23.24, 'mean': 2.11}
+
+===== refined scoring: 3 seeds, requests/run=[866, 869, 859], attack/run=[660, 660, 660], client errors=[0, 0, 0]
+  benign outcomes: [{'benign': 206, 'challenged': 0, 'denied': 3, 'challenge_then_success': 0, 'reasons': {}}, {'benign': 209, 'challenged': 0, 'denied': 4, 'challenge_then_success': 0, 'reasons': {}}, {'benign': 199, 'challenged': 0, 'denied': 2, 'challenge_then_success': 0, 'reasons': {}}]
+  [ours] acc 0.653 ± 0.001 | prec 0.992 ± 0.003 | rec 0.549 ± 0.002 | FPR 0.015 ± 0.005 | mean TP/FN/FP/TN 362.7/297.3/3/201.7
+      A1-vertical        {'campaigns': 15, 'flagged': 15, 'mean_delay': 2.13, 'fp_requests': 0, 'requests': 600}
+      A2-stuffing        {'campaigns': 15, 'flagged': 15, 'mean_delay': 4, 'fp_requests': 0, 'requests': 450}
+      A3-lowslow         {'campaigns': 9, 'flagged': 9, 'mean_delay': 2.22, 'fp_requests': 0, 'requests': 135}
+      A4-honeypot        {'campaigns': 15, 'flagged': 15, 'mean_delay': 0, 'fp_requests': 0, 'requests': 15}
+      A5-dist-stuffing   {'campaigns': 3, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 600}
+      A6-dist-brute      {'campaigns': 3, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 180}
+      B1-normal          {'campaigns': 90, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 187}
+      B2-typo            {'campaigns': 60, 'flagged': 5, 'mean_delay': None, 'fp_requests': 9, 'requests': 189}
+      B3-nat             {'campaigns': 9, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 72}
+      B4-pwmgr           {'campaigns': 30, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 30}
+      B5-multidevice     {'campaigns': 15, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 45}
+      B6-returning       {'campaigns': 60, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 91}
+  [f2b] acc 0.618 ± 0.002 | prec 1.000 ± 0.000 | rec 0.500 ± 0.000 | FPR 0.000 ± 0.000 | mean TP/FN/FP/TN 330/330/0/204.7
+      A1-vertical        {'campaigns': 15, 'flagged': 15, 'mean_delay': 5, 'fp_requests': 0, 'requests': 600}
+      A2-stuffing        {'campaigns': 15, 'flagged': 15, 'mean_delay': 5, 'fp_requests': 0, 'requests': 450}
+      A3-lowslow         {'campaigns': 9, 'flagged': 9, 'mean_delay': 5, 'fp_requests': 0, 'requests': 135}
+      A4-honeypot        {'campaigns': 15, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 15}
+      A5-dist-stuffing   {'campaigns': 3, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 600}
+      A6-dist-brute      {'campaigns': 3, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 180}
+      B1-normal          {'campaigns': 90, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 187}
+      B2-typo            {'campaigns': 60, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 189}
+      B3-nat             {'campaigns': 9, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 72}
+      B4-pwmgr           {'campaigns': 30, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 30}
+      B5-multidevice     {'campaigns': 15, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 45}
+      B6-returning       {'campaigns': 60, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 91}
+  [lockout] acc 0.666 ± 0.007 | prec 0.871 ± 0.014 | rec 0.661 ± 0.005 | FPR 0.316 ± 0.044 | mean TP/FN/FP/TN 436/224/64.7/140
+      A1-vertical        {'campaigns': 15, 'flagged': 15, 'mean_delay': 1, 'fp_requests': 0, 'requests': 600}
+      A2-stuffing        {'campaigns': 15, 'flagged': 15, 'mean_delay': 9.6, 'fp_requests': 0, 'requests': 450}
+      A3-lowslow         {'campaigns': 9, 'flagged': 9, 'mean_delay': 1.67, 'fp_requests': 0, 'requests': 135}
+      A4-honeypot        {'campaigns': 15, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 15}
+      A5-dist-stuffing   {'campaigns': 3, 'flagged': 3, 'mean_delay': 7.33, 'fp_requests': 0, 'requests': 600}
+      A6-dist-brute      {'campaigns': 3, 'flagged': 3, 'mean_delay': 4.33, 'fp_requests': 0, 'requests': 180}
+      B1-normal          {'campaigns': 90, 'flagged': 29, 'mean_delay': None, 'fp_requests': 55, 'requests': 187}
+      B2-typo            {'campaigns': 60, 'flagged': 37, 'mean_delay': None, 'fp_requests': 78, 'requests': 189}
+      B3-nat             {'campaigns': 9, 'flagged': 9, 'mean_delay': None, 'fp_requests': 22, 'requests': 72}
+      B4-pwmgr           {'campaigns': 30, 'flagged': 4, 'mean_delay': None, 'fp_requests': 4, 'requests': 30}
+      B5-multidevice     {'campaigns': 15, 'flagged': 6, 'mean_delay': None, 'fp_requests': 11, 'requests': 45}
+      B6-returning       {'campaigns': 60, 'flagged': 17, 'mean_delay': None, 'fp_requests': 24, 'requests': 91}
+  detection overhead ms: {'n': 2594, 'p50': 0.56, 'p95': 7.96, 'p99': 13.58, 'max': 22.63, 'mean': 2.08}
+
+===== upgraded scoring: 3 seeds, requests/run=[869, 864, 853], attack/run=[660, 660, 660], client errors=[0, 0, 0]
+  benign outcomes: [{'benign': 209, 'challenged': 127, 'denied': 7, 'challenge_then_success': 87, 'reasons': {'account_under_attack': 104, 'global_under_attack': 23}}, {'benign': 204, 'challenged': 118, 'denied': 7, 'challenge_then_success': 82, 'reasons': {'account_under_attack': 92, 'global_under_attack': 26}}, {'benign': 193, 'challenged': 123, 'denied': 0, 'challenge_then_success': 90, 'reasons': {'account_under_attack': 94, 'global_under_attack': 29}}]
+  [ours] acc 0.814 ± 0.005 | prec 0.831 ± 0.006 | rec 0.950 ± 0.002 | FPR 0.630 ± 0.015 | mean TP/FN/FP/TN 627/33/127.3/74.7
+      A1-vertical        {'campaigns': 15, 'flagged': 15, 'mean_delay': 2.13, 'fp_requests': 0, 'requests': 600}
+      A2-stuffing        {'campaigns': 15, 'flagged': 15, 'mean_delay': 2.53, 'fp_requests': 0, 'requests': 450}
+      A3-lowslow         {'campaigns': 9, 'flagged': 9, 'mean_delay': 1.44, 'fp_requests': 0, 'requests': 135}
+      A4-honeypot        {'campaigns': 15, 'flagged': 15, 'mean_delay': 0, 'fp_requests': 0, 'requests': 15}
+      A5-dist-stuffing   {'campaigns': 3, 'flagged': 3, 'mean_delay': 2.67, 'fp_requests': 0, 'requests': 600}
+      A6-dist-brute      {'campaigns': 3, 'flagged': 3, 'mean_delay': 2.67, 'fp_requests': 0, 'requests': 180}
+      B1-normal          {'campaigns': 90, 'flagged': 79, 'mean_delay': None, 'fp_requests': 79, 'requests': 181}
+      B2-typo            {'campaigns': 60, 'flagged': 60, 'mean_delay': None, 'fp_requests': 175, 'requests': 183}
+      B3-nat             {'campaigns': 9, 'flagged': 9, 'mean_delay': None, 'fp_requests': 63, 'requests': 72}
+      B4-pwmgr           {'campaigns': 30, 'flagged': 24, 'mean_delay': None, 'fp_requests': 24, 'requests': 30}
+      B5-multidevice     {'campaigns': 15, 'flagged': 15, 'mean_delay': None, 'fp_requests': 41, 'requests': 45}
+      B6-returning       {'campaigns': 60, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 95}
+  [f2b] acc 0.617 ± 0.004 | prec 1.000 ± 0.000 | rec 0.500 ± 0.000 | FPR 0.000 ± 0.000 | mean TP/FN/FP/TN 330/330/0/202
+      A1-vertical        {'campaigns': 15, 'flagged': 15, 'mean_delay': 5, 'fp_requests': 0, 'requests': 600}
+      A2-stuffing        {'campaigns': 15, 'flagged': 15, 'mean_delay': 5, 'fp_requests': 0, 'requests': 450}
+      A3-lowslow         {'campaigns': 9, 'flagged': 9, 'mean_delay': 5, 'fp_requests': 0, 'requests': 135}
+      A4-honeypot        {'campaigns': 15, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 15}
+      A5-dist-stuffing   {'campaigns': 3, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 600}
+      A6-dist-brute      {'campaigns': 3, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 180}
+      B1-normal          {'campaigns': 90, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 181}
+      B2-typo            {'campaigns': 60, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 183}
+      B3-nat             {'campaigns': 9, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 72}
+      B4-pwmgr           {'campaigns': 30, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 30}
+      B5-multidevice     {'campaigns': 15, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 45}
+      B6-returning       {'campaigns': 60, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 95}
+  [lockout] acc 0.543 ± 0.009 | prec 0.735 ± 0.012 | rec 0.631 ± 0.004 | FPR 0.744 ± 0.020 | mean TP/FN/FP/TN 416.7/243.3/150.3/51.7
+      A1-vertical        {'campaigns': 15, 'flagged': 15, 'mean_delay': 1, 'fp_requests': 0, 'requests': 600}
+      A2-stuffing        {'campaigns': 15, 'flagged': 15, 'mean_delay': 7.53, 'fp_requests': 0, 'requests': 450}
+      A3-lowslow         {'campaigns': 9, 'flagged': 9, 'mean_delay': 1.56, 'fp_requests': 0, 'requests': 135}
+      A4-honeypot        {'campaigns': 15, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 15}
+      A5-dist-stuffing   {'campaigns': 3, 'flagged': 3, 'mean_delay': 14, 'fp_requests': 0, 'requests': 600}
+      A6-dist-brute      {'campaigns': 3, 'flagged': 3, 'mean_delay': 3.33, 'fp_requests': 0, 'requests': 180}
+      B1-normal          {'campaigns': 90, 'flagged': 68, 'mean_delay': None, 'fp_requests': 133, 'requests': 181}
+      B2-typo            {'campaigns': 60, 'flagged': 59, 'mean_delay': None, 'fp_requests': 151, 'requests': 183}
+      B3-nat             {'campaigns': 9, 'flagged': 9, 'mean_delay': None, 'fp_requests': 60, 'requests': 72}
+      B4-pwmgr           {'campaigns': 30, 'flagged': 12, 'mean_delay': None, 'fp_requests': 12, 'requests': 30}
+      B5-multidevice     {'campaigns': 15, 'flagged': 12, 'mean_delay': None, 'fp_requests': 29, 'requests': 45}
+      B6-returning       {'campaigns': 60, 'flagged': 46, 'mean_delay': None, 'fp_requests': 66, 'requests': 95}
+  detection overhead ms: {'n': 2586, 'p50': 3.14, 'p95': 16.12, 'p99': 21.93, 'max': 27.84, 'mean': 4.76}
+
+===== upgraded_benign_only scoring: 1 seeds, requests/run=[200], attack/run=[0], client errors=[0]
+  benign outcomes: [{'benign': 200, 'challenged': 0, 'denied': 4, 'challenge_then_success': 0, 'reasons': {}}]
+  [ours] acc 0.980 | prec 0.000 | rec 0.000 | FPR 0.020 | mean TP/FN/FP/TN 0/0/4/196
+      B1-normal          {'campaigns': 30, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 58}
+      B2-typo            {'campaigns': 20, 'flagged': 3, 'mean_delay': None, 'fp_requests': 4, 'requests': 62}
+      B3-nat             {'campaigns': 3, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 24}
+      B4-pwmgr           {'campaigns': 10, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 10}
+      B5-multidevice     {'campaigns': 5, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 15}
+      B6-returning       {'campaigns': 20, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 31}
+  [f2b] acc 1.000 | prec 0.000 | rec 0.000 | FPR 0.000 | mean TP/FN/FP/TN 0/0/0/200
+      B1-normal          {'campaigns': 30, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 58}
+      B2-typo            {'campaigns': 20, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 62}
+      B3-nat             {'campaigns': 3, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 24}
+      B4-pwmgr           {'campaigns': 10, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 10}
+      B5-multidevice     {'campaigns': 5, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 15}
+      B6-returning       {'campaigns': 20, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 31}
+  [lockout] acc 0.980 | prec 0.000 | rec 0.000 | FPR 0.020 | mean TP/FN/FP/TN 0/0/4/196
+      B1-normal          {'campaigns': 30, 'flagged': 1, 'mean_delay': None, 'fp_requests': 1, 'requests': 58}
+      B2-typo            {'campaigns': 20, 'flagged': 3, 'mean_delay': None, 'fp_requests': 3, 'requests': 62}
+      B3-nat             {'campaigns': 3, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 24}
+      B4-pwmgr           {'campaigns': 10, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 10}
+      B5-multidevice     {'campaigns': 5, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 15}
+      B6-returning       {'campaigns': 20, 'flagged': 0, 'mean_delay': None, 'fp_requests': 0, 'requests': 31}
+  detection overhead ms: {'n': 200, 'p50': 0.74, 'p95': 7.88, 'p99': 14.48, 'max': 21.74, 'mean': 2.04}
