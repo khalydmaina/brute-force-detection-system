@@ -15,6 +15,7 @@ from config import (
     THRESHOLD_IP, THRESHOLD_USER,
     BLOCK_TTL, TRACKING_TTL, THROTTLE_TTL,
     TIMESTAMP_SAMPLE_SIZE, MIN_SAMPLES_FOR_ANOMALY,
+    DIVERSITY_FAILED_ONLY,
 )
 
 
@@ -80,10 +81,11 @@ async def update_ip_state(
     pipe.expire(f"ip:{ip}:timestamps", TRACKING_TTL)
 
     # Spatial diversity tracking
-    pipe.sadd(f"ip:{ip}:usernames", username)
-    pipe.expire(f"ip:{ip}:usernames", TRACKING_TTL)
-    pipe.sadd(f"username:{username}:ips", ip)
-    pipe.expire(f"username:{username}:ips", TRACKING_TTL)
+    if not (DIVERSITY_FAILED_ONLY and success):
+        pipe.sadd(f"ip:{ip}:usernames", username)
+        pipe.expire(f"ip:{ip}:usernames", TRACKING_TTL)
+        pipe.sadd(f"username:{username}:ips", ip)
+        pipe.expire(f"username:{username}:ips", TRACKING_TTL)
 
     await pipe.execute()
 
@@ -203,3 +205,65 @@ def compute_evasion_score(
 
     es = (ALPHA * d_ip) + (BETA * d_user) + (GAMMA * t_anom)
     return max(0.0, min(100.0, es))
+
+
+# ─────────────────────────────────────────────
+# Revision: Account Pressure and Global Pressure signals
+# ─────────────────────────────────────────────
+from config import (ACCT_SUSPECT_IP_THRESHOLD, ACCT_WINDOW, ACCT_HOLD,
+                    GLOBAL_COLD_THRESHOLD, GLOBAL_COLD_RATIO, GLOBAL_WINDOW, GLOBAL_HOLD, GOOD_IP_TTL)
+import uuid as _uuid
+
+async def get_context_signals(redis: aioredis.Redis, ip: str, username: str) -> dict:
+    """One pipelined round-trip: is this account / the whole endpoint under distributed attack,
+    and has this IP previously authenticated successfully to this account?"""
+    pipe = redis.pipeline()
+    pipe.exists(f"acct:{username}:under_attack")
+    pipe.sismember(f"acct:{username}:good_ips", ip)
+    pipe.exists("global:under_attack")
+    pipe.scard(f"acct:{username}:suspect_ips")
+    pipe.zcard("global:cold_suspects")
+    r = await pipe.execute()
+    return {"acct_attack": bool(r[0]), "known_ip": bool(r[1]), "global_attack": bool(r[2]),
+            "acct_suspect_ips": int(r[3] or 0), "global_cold": int(r[4] or 0)}
+
+async def record_suspect(redis: aioredis.Redis, ip: str, username: str, warm: bool) -> None:
+    """Called for failed or unsolved-challenge attempts. Updates the account's set of distinct
+    suspect IPs and the global sliding window of suspect attempts from cold (never-successful) IPs."""
+    now = time.time()
+    pipe = redis.pipeline()
+    pipe.sadd(f"acct:{username}:suspect_ips", ip)
+    pipe.expire(f"acct:{username}:suspect_ips", ACCT_WINDOW)
+    pipe.scard(f"acct:{username}:suspect_ips")
+    if not warm:
+        member = f"{now}:{ip}:{_uuid.uuid4().hex[:6]}"
+        pipe.zadd("global:cold_suspects", {member: now})
+        pipe.zremrangebyscore("global:cold_suspects", 0, now - GLOBAL_WINDOW)
+        pipe.zcard("global:cold_suspects")
+        pipe.zadd("global:cold_all", {member: now})
+        pipe.zremrangebyscore("global:cold_all", 0, now - GLOBAL_WINDOW)
+        pipe.zcard("global:cold_all")
+    r = await pipe.execute()
+    pipe = redis.pipeline()
+    if r[2] >= ACCT_SUSPECT_IP_THRESHOLD:
+        pipe.set(f"acct:{username}:under_attack", "1", ex=ACCT_HOLD)
+    if not warm:
+        suspects, total = r[5], max(1, r[8])
+        # Global Pressure: enough suspect attempts from cold IPs AND they dominate cold-IP traffic
+        if suspects >= GLOBAL_COLD_THRESHOLD and suspects / total >= GLOBAL_COLD_RATIO:
+            pipe.set("global:under_attack", "1", ex=GLOBAL_HOLD)
+    await pipe.execute()
+
+async def record_cold_attempt(redis: aioredis.Redis, ip: str) -> None:
+    """Successful attempt from a cold IP: counts toward the cold-IP denominator only."""
+    now = time.time()
+    pipe = redis.pipeline()
+    pipe.zadd("global:cold_all", {f"{now}:{ip}:{_uuid.uuid4().hex[:6]}": now})
+    pipe.zremrangebyscore("global:cold_all", 0, now - GLOBAL_WINDOW)
+    await pipe.execute()
+
+async def record_good(redis: aioredis.Redis, ip: str, username: str) -> None:
+    pipe = redis.pipeline()
+    pipe.sadd(f"acct:{username}:good_ips", ip)
+    pipe.expire(f"acct:{username}:good_ips", GOOD_IP_TTL)
+    await pipe.execute()

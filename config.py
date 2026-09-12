@@ -46,8 +46,26 @@ DEMO_USERS = {
 }
 
 # --- Redis ---
-REDIS_URL = "redis://localhost:6379/0"
+import os
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
 # --- Timing anomaly sample window ---
 TIMESTAMP_SAMPLE_SIZE = 20   # Number of past timestamps kept per IP
 MIN_SAMPLES_FOR_ANOMALY = 3  # Minimum samples before timing anomaly is computed
+
+# --- Revision: count only FAILED attempts toward spatial diversity (D_IP, D_User) ---
+# Credential stuffing produces many distinct usernames with failed logins; a shared
+# NAT/office IP produces many distinct usernames with successful logins.
+import os as _os
+DIVERSITY_FAILED_ONLY = _os.getenv("DIVERSITY_FAILED_ONLY", "1") == "1"
+
+# --- Revision: account-level and global signals for distributed (IP-rotating) attacks ---
+ACCOUNT_SIGNALS          = _os.getenv("ACCOUNT_SIGNALS", "1") == "1"
+ACCT_SUSPECT_IP_THRESHOLD = int(_os.getenv("ACCT_SUSPECT_IP_THRESHOLD", "5"))   # distinct failing IPs per account
+ACCT_WINDOW              = 3600       # seconds a failing IP stays in an account's suspect set
+ACCT_HOLD                = 900        # seconds an account stays in protected mode after the last trigger
+GLOBAL_COLD_THRESHOLD    = int(_os.getenv("GLOBAL_COLD_THRESHOLD", "20"))       # minimum suspect attempts from cold IPs per window
+GLOBAL_COLD_RATIO        = float(_os.getenv("GLOBAL_COLD_RATIO", "0.5"))        # and minimum failure ratio among cold-IP attempts
+GLOBAL_WINDOW            = 60
+GLOBAL_HOLD              = 300
+GOOD_IP_TTL              = 7 * 86400  # how long an IP stays "known" for an account after a successful login

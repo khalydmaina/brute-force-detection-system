@@ -1,0 +1,1155 @@
+{
+ "original": {
+  "benign_outcomes": [
+   {
+    "benign": 208,
+    "challenged": 0,
+    "denied": 53,
+    "challenge_then_success": 0,
+    "reasons": {}
+   },
+   {
+    "benign": 209,
+    "challenged": 0,
+    "denied": 40,
+    "challenge_then_success": 0,
+    "reasons": {}
+   },
+   {
+    "benign": 197,
+    "challenged": 0,
+    "denied": 38,
+    "challenge_then_success": 0,
+    "reasons": {}
+   }
+  ],
+  "ours": {
+   "accuracy": "0.606 \u00b1 0.008",
+   "precision": "0.893 \u00b1 0.018",
+   "recall": "0.549 \u00b1 0.002",
+   "fpr": "0.213 \u00b1 0.036",
+   "tp": 362.7,
+   "fn": 297.3,
+   "fp": 43.7,
+   "tn": 161,
+   "families": {
+    "A1-vertical": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": 2.13,
+     "fp_requests": 0,
+     "requests": 600
+    },
+    "A2-stuffing": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": 4,
+     "fp_requests": 0,
+     "requests": 450
+    },
+    "A3-lowslow": {
+     "campaigns": 9,
+     "flagged": 9,
+     "mean_delay": 2.22,
+     "fp_requests": 0,
+     "requests": 135
+    },
+    "A4-honeypot": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": 0,
+     "fp_requests": 0,
+     "requests": 15
+    },
+    "A5-dist-stuffing": {
+     "campaigns": 3,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 600
+    },
+    "A6-dist-brute": {
+     "campaigns": 3,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 180
+    },
+    "B1-normal": {
+     "campaigns": 90,
+     "flagged": 32,
+     "mean_delay": null,
+     "fp_requests": 42,
+     "requests": 194
+    },
+    "B2-typo": {
+     "campaigns": 60,
+     "flagged": 21,
+     "mean_delay": null,
+     "fp_requests": 34,
+     "requests": 184
+    },
+    "B3-nat": {
+     "campaigns": 9,
+     "flagged": 9,
+     "mean_delay": null,
+     "fp_requests": 49,
+     "requests": 72
+    },
+    "B4-pwmgr": {
+     "campaigns": 30,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 30
+    },
+    "B5-multidevice": {
+     "campaigns": 15,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 45
+    },
+    "B6-returning": {
+     "campaigns": 60,
+     "flagged": 6,
+     "mean_delay": null,
+     "fp_requests": 6,
+     "requests": 89
+    }
+   }
+  },
+  "f2b": {
+   "accuracy": "0.618 \u00b1 0.003",
+   "precision": "1.000 \u00b1 0.000",
+   "recall": "0.500 \u00b1 0.000",
+   "fpr": "0.000 \u00b1 0.000",
+   "tp": 330,
+   "fn": 330,
+   "fp": 0,
+   "tn": 204.7,
+   "families": {
+    "A1-vertical": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": 5,
+     "fp_requests": 0,
+     "requests": 600
+    },
+    "A2-stuffing": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": 5,
+     "fp_requests": 0,
+     "requests": 450
+    },
+    "A3-lowslow": {
+     "campaigns": 9,
+     "flagged": 9,
+     "mean_delay": 5,
+     "fp_requests": 0,
+     "requests": 135
+    },
+    "A4-honeypot": {
+     "campaigns": 15,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 15
+    },
+    "A5-dist-stuffing": {
+     "campaigns": 3,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 600
+    },
+    "A6-dist-brute": {
+     "campaigns": 3,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 180
+    },
+    "B1-normal": {
+     "campaigns": 90,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 194
+    },
+    "B2-typo": {
+     "campaigns": 60,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 184
+    },
+    "B3-nat": {
+     "campaigns": 9,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 72
+    },
+    "B4-pwmgr": {
+     "campaigns": 30,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 30
+    },
+    "B5-multidevice": {
+     "campaigns": 15,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 45
+    },
+    "B6-returning": {
+     "campaigns": 60,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 89
+    }
+   }
+  },
+  "lockout": {
+   "accuracy": "0.675 \u00b1 0.012",
+   "precision": "0.883 \u00b1 0.017",
+   "recall": "0.662 \u00b1 0.004",
+   "fpr": "0.283 \u00b1 0.039",
+   "tp": 436.7,
+   "fn": 223.3,
+   "fp": 58,
+   "tn": 146.7,
+   "families": {
+    "A1-vertical": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": 1,
+     "fp_requests": 0,
+     "requests": 600
+    },
+    "A2-stuffing": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": 9.6,
+     "fp_requests": 0,
+     "requests": 450
+    },
+    "A3-lowslow": {
+     "campaigns": 9,
+     "flagged": 9,
+     "mean_delay": 1.67,
+     "fp_requests": 0,
+     "requests": 135
+    },
+    "A4-honeypot": {
+     "campaigns": 15,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 15
+    },
+    "A5-dist-stuffing": {
+     "campaigns": 3,
+     "flagged": 3,
+     "mean_delay": 7,
+     "fp_requests": 0,
+     "requests": 600
+    },
+    "A6-dist-brute": {
+     "campaigns": 3,
+     "flagged": 3,
+     "mean_delay": 4.33,
+     "fp_requests": 0,
+     "requests": 180
+    },
+    "B1-normal": {
+     "campaigns": 90,
+     "flagged": 25,
+     "mean_delay": null,
+     "fp_requests": 47,
+     "requests": 194
+    },
+    "B2-typo": {
+     "campaigns": 60,
+     "flagged": 34,
+     "mean_delay": null,
+     "fp_requests": 62,
+     "requests": 184
+    },
+    "B3-nat": {
+     "campaigns": 9,
+     "flagged": 9,
+     "mean_delay": null,
+     "fp_requests": 22,
+     "requests": 72
+    },
+    "B4-pwmgr": {
+     "campaigns": 30,
+     "flagged": 10,
+     "mean_delay": null,
+     "fp_requests": 10,
+     "requests": 30
+    },
+    "B5-multidevice": {
+     "campaigns": 15,
+     "flagged": 5,
+     "mean_delay": null,
+     "fp_requests": 9,
+     "requests": 45
+    },
+    "B6-returning": {
+     "campaigns": 60,
+     "flagged": 20,
+     "mean_delay": null,
+     "fp_requests": 24,
+     "requests": 89
+    }
+   }
+  },
+  "detect_ms": {
+   "n": 2594,
+   "p50": 0.58,
+   "p95": 8.0,
+   "p99": 12.37,
+   "max": 23.24,
+   "mean": 2.11
+  }
+ },
+ "refined": {
+  "benign_outcomes": [
+   {
+    "benign": 206,
+    "challenged": 0,
+    "denied": 3,
+    "challenge_then_success": 0,
+    "reasons": {}
+   },
+   {
+    "benign": 209,
+    "challenged": 0,
+    "denied": 4,
+    "challenge_then_success": 0,
+    "reasons": {}
+   },
+   {
+    "benign": 199,
+    "challenged": 0,
+    "denied": 2,
+    "challenge_then_success": 0,
+    "reasons": {}
+   }
+  ],
+  "ours": {
+   "accuracy": "0.653 \u00b1 0.001",
+   "precision": "0.992 \u00b1 0.003",
+   "recall": "0.549 \u00b1 0.002",
+   "fpr": "0.015 \u00b1 0.005",
+   "tp": 362.7,
+   "fn": 297.3,
+   "fp": 3,
+   "tn": 201.7,
+   "families": {
+    "A1-vertical": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": 2.13,
+     "fp_requests": 0,
+     "requests": 600
+    },
+    "A2-stuffing": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": 4,
+     "fp_requests": 0,
+     "requests": 450
+    },
+    "A3-lowslow": {
+     "campaigns": 9,
+     "flagged": 9,
+     "mean_delay": 2.22,
+     "fp_requests": 0,
+     "requests": 135
+    },
+    "A4-honeypot": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": 0,
+     "fp_requests": 0,
+     "requests": 15
+    },
+    "A5-dist-stuffing": {
+     "campaigns": 3,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 600
+    },
+    "A6-dist-brute": {
+     "campaigns": 3,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 180
+    },
+    "B1-normal": {
+     "campaigns": 90,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 187
+    },
+    "B2-typo": {
+     "campaigns": 60,
+     "flagged": 5,
+     "mean_delay": null,
+     "fp_requests": 9,
+     "requests": 189
+    },
+    "B3-nat": {
+     "campaigns": 9,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 72
+    },
+    "B4-pwmgr": {
+     "campaigns": 30,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 30
+    },
+    "B5-multidevice": {
+     "campaigns": 15,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 45
+    },
+    "B6-returning": {
+     "campaigns": 60,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 91
+    }
+   }
+  },
+  "f2b": {
+   "accuracy": "0.618 \u00b1 0.002",
+   "precision": "1.000 \u00b1 0.000",
+   "recall": "0.500 \u00b1 0.000",
+   "fpr": "0.000 \u00b1 0.000",
+   "tp": 330,
+   "fn": 330,
+   "fp": 0,
+   "tn": 204.7,
+   "families": {
+    "A1-vertical": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": 5,
+     "fp_requests": 0,
+     "requests": 600
+    },
+    "A2-stuffing": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": 5,
+     "fp_requests": 0,
+     "requests": 450
+    },
+    "A3-lowslow": {
+     "campaigns": 9,
+     "flagged": 9,
+     "mean_delay": 5,
+     "fp_requests": 0,
+     "requests": 135
+    },
+    "A4-honeypot": {
+     "campaigns": 15,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 15
+    },
+    "A5-dist-stuffing": {
+     "campaigns": 3,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 600
+    },
+    "A6-dist-brute": {
+     "campaigns": 3,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 180
+    },
+    "B1-normal": {
+     "campaigns": 90,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 187
+    },
+    "B2-typo": {
+     "campaigns": 60,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 189
+    },
+    "B3-nat": {
+     "campaigns": 9,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 72
+    },
+    "B4-pwmgr": {
+     "campaigns": 30,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 30
+    },
+    "B5-multidevice": {
+     "campaigns": 15,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 45
+    },
+    "B6-returning": {
+     "campaigns": 60,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 91
+    }
+   }
+  },
+  "lockout": {
+   "accuracy": "0.666 \u00b1 0.007",
+   "precision": "0.871 \u00b1 0.014",
+   "recall": "0.661 \u00b1 0.005",
+   "fpr": "0.316 \u00b1 0.044",
+   "tp": 436,
+   "fn": 224,
+   "fp": 64.7,
+   "tn": 140,
+   "families": {
+    "A1-vertical": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": 1,
+     "fp_requests": 0,
+     "requests": 600
+    },
+    "A2-stuffing": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": 9.6,
+     "fp_requests": 0,
+     "requests": 450
+    },
+    "A3-lowslow": {
+     "campaigns": 9,
+     "flagged": 9,
+     "mean_delay": 1.67,
+     "fp_requests": 0,
+     "requests": 135
+    },
+    "A4-honeypot": {
+     "campaigns": 15,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 15
+    },
+    "A5-dist-stuffing": {
+     "campaigns": 3,
+     "flagged": 3,
+     "mean_delay": 7.33,
+     "fp_requests": 0,
+     "requests": 600
+    },
+    "A6-dist-brute": {
+     "campaigns": 3,
+     "flagged": 3,
+     "mean_delay": 4.33,
+     "fp_requests": 0,
+     "requests": 180
+    },
+    "B1-normal": {
+     "campaigns": 90,
+     "flagged": 29,
+     "mean_delay": null,
+     "fp_requests": 55,
+     "requests": 187
+    },
+    "B2-typo": {
+     "campaigns": 60,
+     "flagged": 37,
+     "mean_delay": null,
+     "fp_requests": 78,
+     "requests": 189
+    },
+    "B3-nat": {
+     "campaigns": 9,
+     "flagged": 9,
+     "mean_delay": null,
+     "fp_requests": 22,
+     "requests": 72
+    },
+    "B4-pwmgr": {
+     "campaigns": 30,
+     "flagged": 4,
+     "mean_delay": null,
+     "fp_requests": 4,
+     "requests": 30
+    },
+    "B5-multidevice": {
+     "campaigns": 15,
+     "flagged": 6,
+     "mean_delay": null,
+     "fp_requests": 11,
+     "requests": 45
+    },
+    "B6-returning": {
+     "campaigns": 60,
+     "flagged": 17,
+     "mean_delay": null,
+     "fp_requests": 24,
+     "requests": 91
+    }
+   }
+  },
+  "detect_ms": {
+   "n": 2594,
+   "p50": 0.56,
+   "p95": 7.96,
+   "p99": 13.58,
+   "max": 22.63,
+   "mean": 2.08
+  }
+ },
+ "upgraded": {
+  "benign_outcomes": [
+   {
+    "benign": 209,
+    "challenged": 127,
+    "denied": 7,
+    "challenge_then_success": 87,
+    "reasons": {
+     "account_under_attack": 104,
+     "global_under_attack": 23
+    }
+   },
+   {
+    "benign": 204,
+    "challenged": 118,
+    "denied": 7,
+    "challenge_then_success": 82,
+    "reasons": {
+     "account_under_attack": 92,
+     "global_under_attack": 26
+    }
+   },
+   {
+    "benign": 193,
+    "challenged": 123,
+    "denied": 0,
+    "challenge_then_success": 90,
+    "reasons": {
+     "account_under_attack": 94,
+     "global_under_attack": 29
+    }
+   }
+  ],
+  "ours": {
+   "accuracy": "0.814 \u00b1 0.005",
+   "precision": "0.831 \u00b1 0.006",
+   "recall": "0.950 \u00b1 0.002",
+   "fpr": "0.630 \u00b1 0.015",
+   "tp": 627,
+   "fn": 33,
+   "fp": 127.3,
+   "tn": 74.7,
+   "families": {
+    "A1-vertical": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": 2.13,
+     "fp_requests": 0,
+     "requests": 600
+    },
+    "A2-stuffing": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": 2.53,
+     "fp_requests": 0,
+     "requests": 450
+    },
+    "A3-lowslow": {
+     "campaigns": 9,
+     "flagged": 9,
+     "mean_delay": 1.44,
+     "fp_requests": 0,
+     "requests": 135
+    },
+    "A4-honeypot": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": 0,
+     "fp_requests": 0,
+     "requests": 15
+    },
+    "A5-dist-stuffing": {
+     "campaigns": 3,
+     "flagged": 3,
+     "mean_delay": 2.67,
+     "fp_requests": 0,
+     "requests": 600
+    },
+    "A6-dist-brute": {
+     "campaigns": 3,
+     "flagged": 3,
+     "mean_delay": 2.67,
+     "fp_requests": 0,
+     "requests": 180
+    },
+    "B1-normal": {
+     "campaigns": 90,
+     "flagged": 79,
+     "mean_delay": null,
+     "fp_requests": 79,
+     "requests": 181
+    },
+    "B2-typo": {
+     "campaigns": 60,
+     "flagged": 60,
+     "mean_delay": null,
+     "fp_requests": 175,
+     "requests": 183
+    },
+    "B3-nat": {
+     "campaigns": 9,
+     "flagged": 9,
+     "mean_delay": null,
+     "fp_requests": 63,
+     "requests": 72
+    },
+    "B4-pwmgr": {
+     "campaigns": 30,
+     "flagged": 24,
+     "mean_delay": null,
+     "fp_requests": 24,
+     "requests": 30
+    },
+    "B5-multidevice": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": null,
+     "fp_requests": 41,
+     "requests": 45
+    },
+    "B6-returning": {
+     "campaigns": 60,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 95
+    }
+   }
+  },
+  "f2b": {
+   "accuracy": "0.617 \u00b1 0.004",
+   "precision": "1.000 \u00b1 0.000",
+   "recall": "0.500 \u00b1 0.000",
+   "fpr": "0.000 \u00b1 0.000",
+   "tp": 330,
+   "fn": 330,
+   "fp": 0,
+   "tn": 202,
+   "families": {
+    "A1-vertical": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": 5,
+     "fp_requests": 0,
+     "requests": 600
+    },
+    "A2-stuffing": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": 5,
+     "fp_requests": 0,
+     "requests": 450
+    },
+    "A3-lowslow": {
+     "campaigns": 9,
+     "flagged": 9,
+     "mean_delay": 5,
+     "fp_requests": 0,
+     "requests": 135
+    },
+    "A4-honeypot": {
+     "campaigns": 15,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 15
+    },
+    "A5-dist-stuffing": {
+     "campaigns": 3,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 600
+    },
+    "A6-dist-brute": {
+     "campaigns": 3,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 180
+    },
+    "B1-normal": {
+     "campaigns": 90,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 181
+    },
+    "B2-typo": {
+     "campaigns": 60,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 183
+    },
+    "B3-nat": {
+     "campaigns": 9,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 72
+    },
+    "B4-pwmgr": {
+     "campaigns": 30,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 30
+    },
+    "B5-multidevice": {
+     "campaigns": 15,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 45
+    },
+    "B6-returning": {
+     "campaigns": 60,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 95
+    }
+   }
+  },
+  "lockout": {
+   "accuracy": "0.543 \u00b1 0.009",
+   "precision": "0.735 \u00b1 0.012",
+   "recall": "0.631 \u00b1 0.004",
+   "fpr": "0.744 \u00b1 0.020",
+   "tp": 416.7,
+   "fn": 243.3,
+   "fp": 150.3,
+   "tn": 51.7,
+   "families": {
+    "A1-vertical": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": 1,
+     "fp_requests": 0,
+     "requests": 600
+    },
+    "A2-stuffing": {
+     "campaigns": 15,
+     "flagged": 15,
+     "mean_delay": 7.53,
+     "fp_requests": 0,
+     "requests": 450
+    },
+    "A3-lowslow": {
+     "campaigns": 9,
+     "flagged": 9,
+     "mean_delay": 1.56,
+     "fp_requests": 0,
+     "requests": 135
+    },
+    "A4-honeypot": {
+     "campaigns": 15,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 15
+    },
+    "A5-dist-stuffing": {
+     "campaigns": 3,
+     "flagged": 3,
+     "mean_delay": 14,
+     "fp_requests": 0,
+     "requests": 600
+    },
+    "A6-dist-brute": {
+     "campaigns": 3,
+     "flagged": 3,
+     "mean_delay": 3.33,
+     "fp_requests": 0,
+     "requests": 180
+    },
+    "B1-normal": {
+     "campaigns": 90,
+     "flagged": 68,
+     "mean_delay": null,
+     "fp_requests": 133,
+     "requests": 181
+    },
+    "B2-typo": {
+     "campaigns": 60,
+     "flagged": 59,
+     "mean_delay": null,
+     "fp_requests": 151,
+     "requests": 183
+    },
+    "B3-nat": {
+     "campaigns": 9,
+     "flagged": 9,
+     "mean_delay": null,
+     "fp_requests": 60,
+     "requests": 72
+    },
+    "B4-pwmgr": {
+     "campaigns": 30,
+     "flagged": 12,
+     "mean_delay": null,
+     "fp_requests": 12,
+     "requests": 30
+    },
+    "B5-multidevice": {
+     "campaigns": 15,
+     "flagged": 12,
+     "mean_delay": null,
+     "fp_requests": 29,
+     "requests": 45
+    },
+    "B6-returning": {
+     "campaigns": 60,
+     "flagged": 46,
+     "mean_delay": null,
+     "fp_requests": 66,
+     "requests": 95
+    }
+   }
+  },
+  "detect_ms": {
+   "n": 2586,
+   "p50": 3.14,
+   "p95": 16.12,
+   "p99": 21.93,
+   "max": 27.84,
+   "mean": 4.76
+  }
+ },
+ "upgraded_benign_only": {
+  "benign_outcomes": [
+   {
+    "benign": 200,
+    "challenged": 0,
+    "denied": 4,
+    "challenge_then_success": 0,
+    "reasons": {}
+   }
+  ],
+  "ours": {
+   "accuracy": "0.980",
+   "precision": "0.000",
+   "recall": "0.000",
+   "fpr": "0.020",
+   "tp": 0,
+   "fn": 0,
+   "fp": 4,
+   "tn": 196,
+   "families": {
+    "B1-normal": {
+     "campaigns": 30,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 58
+    },
+    "B2-typo": {
+     "campaigns": 20,
+     "flagged": 3,
+     "mean_delay": null,
+     "fp_requests": 4,
+     "requests": 62
+    },
+    "B3-nat": {
+     "campaigns": 3,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 24
+    },
+    "B4-pwmgr": {
+     "campaigns": 10,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 10
+    },
+    "B5-multidevice": {
+     "campaigns": 5,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 15
+    },
+    "B6-returning": {
+     "campaigns": 20,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 31
+    }
+   }
+  },
+  "f2b": {
+   "accuracy": "1.000",
+   "precision": "0.000",
+   "recall": "0.000",
+   "fpr": "0.000",
+   "tp": 0,
+   "fn": 0,
+   "fp": 0,
+   "tn": 200,
+   "families": {
+    "B1-normal": {
+     "campaigns": 30,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 58
+    },
+    "B2-typo": {
+     "campaigns": 20,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 62
+    },
+    "B3-nat": {
+     "campaigns": 3,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 24
+    },
+    "B4-pwmgr": {
+     "campaigns": 10,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 10
+    },
+    "B5-multidevice": {
+     "campaigns": 5,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 15
+    },
+    "B6-returning": {
+     "campaigns": 20,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 31
+    }
+   }
+  },
+  "lockout": {
+   "accuracy": "0.980",
+   "precision": "0.000",
+   "recall": "0.000",
+   "fpr": "0.020",
+   "tp": 0,
+   "fn": 0,
+   "fp": 4,
+   "tn": 196,
+   "families": {
+    "B1-normal": {
+     "campaigns": 30,
+     "flagged": 1,
+     "mean_delay": null,
+     "fp_requests": 1,
+     "requests": 58
+    },
+    "B2-typo": {
+     "campaigns": 20,
+     "flagged": 3,
+     "mean_delay": null,
+     "fp_requests": 3,
+     "requests": 62
+    },
+    "B3-nat": {
+     "campaigns": 3,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 24
+    },
+    "B4-pwmgr": {
+     "campaigns": 10,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 10
+    },
+    "B5-multidevice": {
+     "campaigns": 5,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 15
+    },
+    "B6-returning": {
+     "campaigns": 20,
+     "flagged": 0,
+     "mean_delay": null,
+     "fp_requests": 0,
+     "requests": 31
+    }
+   }
+  },
+  "detect_ms": {
+   "n": 200,
+   "p50": 0.74,
+   "p95": 7.88,
+   "p99": 14.48,
+   "max": 21.74,
+   "mean": 2.04
+  }
+ }
+}

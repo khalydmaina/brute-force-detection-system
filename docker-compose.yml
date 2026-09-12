@@ -5,8 +5,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: intercept_redis
-    ports:
-      - "6379:6379"
+    # Not published to the host: an exposed, unauthenticated Redis would let anyone flush blocks.
     command: >
       redis-server
       --maxmemory 256mb
@@ -21,13 +20,19 @@ services:
 
   backend:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
     container_name: intercept_backend
     ports:
       - "8000:8000"
     environment:
       - REDIS_URL=redis://redis:6379/0
+      - ADMIN_API_KEY=${ADMIN_API_KEY:?set ADMIN_API_KEY in .env}
+      - TRUSTED_PROXIES=${TRUSTED_PROXIES:-}
+      - TURNSTILE_SECRET=${TURNSTILE_SECRET:-}
+      - ENABLE_SIMULATION=${ENABLE_SIMULATION:-0}
+      - DIVERSITY_FAILED_ONLY=${DIVERSITY_FAILED_ONLY:-1}
+      - ACCOUNT_SIGNALS=${ACCOUNT_SIGNALS:-1}
     depends_on:
       redis:
         condition: service_healthy

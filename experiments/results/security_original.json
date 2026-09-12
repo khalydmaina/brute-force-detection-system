@@ -1,0 +1,37 @@
+{
+ "t1_xff_rotation": {
+  "mitigated": false,
+  "detail": "60/60 password guesses reached credential check",
+  "attack": "Attacker rotates X-Forwarded-For on every request to evade per-IP tracking."
+ },
+ "t2_xff_framing": {
+  "mitigated": false,
+  "detail": "victim login returned HTTP 403",
+  "attack": "Attacker spoofs a victim's IP in X-Forwarded-For and hits the honeypot, getting the victim blocked."
+ },
+ "t3_captcha_bypass": {
+  "mitigated": false,
+  "detail": "with static token: HTTP 401 tier=1",
+  "attack": "Attacker supplies a static CAPTCHA token to skip Tier 2."
+ },
+ "t4_admin_unblock": {
+  "mitigated": false,
+  "detail": "unauthenticated unblock HTTP 200; attacker next login HTTP 401",
+  "attack": "Hard-blocked attacker calls the admin unblock endpoint without credentials."
+ },
+ "t5_audit_wipe": {
+  "mitigated": false,
+  "detail": "unauthenticated factory-reset HTTP 200",
+  "attack": "Unauthenticated caller deletes the audit log via factory reset."
+ },
+ "t6_simulation_endpoint": {
+  "mitigated": false,
+  "detail": "/test/login HTTP 401",
+  "attack": "Simulation endpoint lets any caller choose its own source IP."
+ },
+ "t7_admin_read": {
+  "mitigated": false,
+  "detail": "/admin/logs/live HTTP 200",
+  "attack": "Unauthenticated read of live logs and blocked-IP lists (information disclosure)."
+ }
+}

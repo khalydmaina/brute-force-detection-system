@@ -1,0 +1,7 @@
+{'concurrency': 10, 'completed': 6622, 'errors': 0, 'error_rate': 0.0, 'throughput_rps': 331.1, 'p50_ms': 27.56, 'p95_ms': 51.58, 'p99_ms': 78.9, 'max_ms': 180.1, 'codes': {401: 23, 429: 6599}, 'cpu_mean_pct': 47.9, 'rss_peak_mb': 81.4}
+{'concurrency': 50, 'completed': 3796, 'errors': 0, 'error_rate': 0.0, 'throughput_rps': 189.8, 'p50_ms': 179.19, 'p95_ms': 785.29, 'p99_ms': 1292.51, 'max_ms': 2076.3, 'codes': {429: 3796}, 'cpu_mean_pct': 36.9, 'rss_peak_mb': 82.0}
+{'concurrency': 100, 'completed': 3446, 'errors': 0, 'error_rate': 0.0, 'throughput_rps': 172.3, 'p50_ms': 385.86, 'p95_ms': 1785.58, 'p99_ms': 3217.12, 'max_ms': 5579.0, 'codes': {429: 3446}, 'cpu_mean_pct': 33.3, 'rss_peak_mb': 83.8}
+{'concurrency': 250, 'completed': 2560, 'errors': 0, 'error_rate': 0.0, 'throughput_rps': 128.0, 'p50_ms': 1305.68, 'p95_ms': 6179.0, 'p99_ms': 8738.46, 'max_ms': 11154.2, 'codes': {429: 2560}, 'cpu_mean_pct': 26.4, 'rss_peak_mb': 88.0}
+{'concurrency': 500, 'completed': 2269, 'errors': 1, 'error_rate': 0.0004, 'throughput_rps': 113.5, 'p50_ms': 3712.35, 'p95_ms': 12868.61, 'p99_ms': 17197.53, 'max_ms': 21232.8, 'codes': {429: 2269}, 'cpu_mean_pct': 20.4, 'rss_peak_mb': 94.1}
+{'concurrency': 10, 'completed': 6512, 'errors': 0, 'error_rate': 0.0, 'throughput_rps': 325.6, 'p50_ms': 28.1, 'p95_ms': 51.92, 'p99_ms': 77.34, 'max_ms': 148.1, 'codes': {429: 6512}, 'cpu_mean_pct': 48.1, 'rss_peak_mb': 94.1, 'phase': 'recovery'}
+redis MB before/after 0.9 11.3 keys 25004

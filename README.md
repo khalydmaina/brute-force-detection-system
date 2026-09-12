@@ -61,27 +61,25 @@ Es = alpha*D_IP + beta*D_User + gamma*T_anomaly
 
 ---
 
-## Empirical Results
+## Empirical Results (journal revision, v5)
 
-Tested across four attack scenarios on Ubuntu Server 22.04 (2 GB RAM, 2 vCPUs):
+Controlled lab evaluation, 3 seeds, about 860 labelled requests per run (660 attack, about 200 benign),
+6 attack families including IP-rotating attacks, 6 benign families. Full method and raw logs in `experiments/`.
+All systems are evaluated on identical traffic; Fail2Ban and account lockout are replayed on the same traces.
 
-| Metric | Target | Achieved | Status |
-|---|---|---|---|
-| Detection Accuracy | > 95% | 95%+ (all 80 attacks detected) | Exceeds Target |
-| False Positive Rate | < 1% | 0% (all 20 clean requests: Tier 1) | Exceeds Target |
-| API Response Latency | < 5 ms | 1.4 ms average | Exceeds Target |
-| Evasion Detection | > 90% | 100% (all 4 scenarios detected) | Exceeds Target |
+| System | Attack recall (per request) | Attack campaigns caught | Benign requests denied | Benign requests challenged |
+|---|---|---|---|---|
+| Original scoring (v4) | 54.9% | 54 of 60 (misses all rotating-IP attacks) | 21.3% | 0% |
+| Failed-only diversity | 54.9% | 54 of 60 | 1.5% | 0% |
+| **Upgraded (v5, default)** | **95.0%** | **60 of 60** | **2.3%** | 60.7% (solvable CAPTCHA) |
+| Fail2Ban (5 failures / 10 min per IP) | 50.0% | 39 of 60 | 0% | 0% |
+| Account lockout (5 failures / 15 min per account) | 63.1% | 45 of 60 | 74.4% | 0% |
 
-### vs. Fail2Ban
+Returning users logging in from a previously successful IP received no friction in the upgraded system
+(0 of 95 requests), versus 69% denied under account lockout. In a benign-only control run, the upgraded
+system challenged 0 of 200 requests and denied 4 (2.0%).
 
-| Attack Type | This System | Fail2Ban |
-|---|---|---|
-| Vertical Brute Force | Tier 4 Hard Block | Block after 5 failures |
-| Credential Stuffing | Tier 3 Throttle | NOT DETECTED |
-| Low-and-Slow Botnet | Tier 2/3 Escalation | NOT DETECTED |
-| Honeypot Access | Tier 4 Instant Block | NOT DETECTED |
-
-3 of 4 attack types completely evade Fail2Ban. This system detects all 4.
+These are laboratory results on synthetic traffic. They do not establish real-world detection rates.
 
 ---
 
@@ -218,6 +216,25 @@ Internet
 The gateway enforces a **Trusted Proxy whitelist** -- it only accepts `X-Forwarded-For` headers from the known internal Nginx IP, preventing IP spoofing attacks.
 
 ---
+
+## Security Configuration (v5, journal revision)
+
+Set these environment variables (see `docker-compose.yml`):
+
+| Variable | Purpose |
+|---|---|
+| `ADMIN_API_KEY` | Required. Every `/admin/*` route needs header `X-Admin-Key`. |
+| `TRUSTED_PROXIES` | Comma-separated CIDRs of your reverse proxies. `X-Forwarded-For` is ignored unless the direct peer is in this list, and the right-most untrusted hop is used. |
+| `TURNSTILE_SECRET` | Cloudflare Turnstile secret. CAPTCHA tokens are verified server-side. Without it, Tier 2 cannot be passed outside simulation mode. |
+| `ENABLE_SIMULATION` | `1` only in the lab. Enables `/test/login` (caller-chosen IP) and the static test CAPTCHA token. Must be `0` in production. |
+| `DIVERSITY_FAILED_ONLY` | Default `1`. Only failed attempts count toward D_IP and D_User (prevents shared-NAT false positives). |
+| `ACCOUNT_SIGNALS` | Default `1`. Enables the Account Pressure and Global Pressure challenge signals for distributed, IP-rotating attacks. |
+
+Do not publish Redis to the host or internet; anyone who can reach it can clear blocks.
+
+## Reproducing the Journal Revision Experiments
+
+See `experiments/README.md`.
 
 ## Configuration
 
